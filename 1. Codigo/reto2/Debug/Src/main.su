@@ -1,0 +1,11 @@
+C:/Users/manue/OneDrive/Documentos/CMSIS/Include/core_cm4.h:1814:22:__NVIC_SetPriority	16	static
+C:/Users/manue/OneDrive/Documentos/CMSIS/Include/core_cm4.h:2022:26:SysTick_Config	16	static
+../Src/main.c:24:9:columnas	24	static
+../Src/main.c:42:6:SysTick_Handler	8	static
+../Src/main.c:61:6:limpiar	16	static
+../Src/main.c:67:6:mostrar	24	static
+../Src/main.c:115:6:Keypad_Init	4	static
+../Src/main.c:134:6:Keypad_Scan	40	static
+../Src/main.c:208:12:Keypad_Task	16	static
+../Src/main.c:298:6:Sistema_Task	24	static
+../Src/main.c:437:5:main	16	static

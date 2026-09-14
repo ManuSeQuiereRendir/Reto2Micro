@@ -1,0 +1,941 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notas interactivas · Microprocesadores (ARM Cortex-M4)</title>
+<style>
+  :root{
+    --bg:#f3f5fa; --surface:#ffffff; --surface2:#f7f9fc;
+    --ink:#182031; --muted:#59657c; --line:#e3e8f1;
+    --accent:#4457d6; --accent2:#3344b8; --accent-soft:#eef1ff;
+    --ok:#0e9f8c; --ok-soft:#e3f5f1; --warn:#c67c12; --warn-soft:#fbf1dd;
+    --pro:#7a3ff2; --pro-soft:#f1ebff;
+    --hot:#e0186a;
+    --shadow:0 1px 2px rgba(24,32,49,.05),0 6px 20px rgba(24,32,49,.06);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+    --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+       -webkit-font-smoothing:antialiased}
+  code,.mono{font-family:var(--mono)}
+  h1,h2,h3,h4{margin:0;line-height:1.2}
+
+  header.top{background:linear-gradient(180deg,#fff,#fbfcfe);border-bottom:1px solid var(--line);
+             position:sticky;top:0;z-index:40}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+  .head-in{padding:20px 22px 0;max-width:1060px;margin:0 auto}
+  .course{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:clamp(23px,3.4vw,32px);margin:7px 0 3px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 4px;max-width:66ch}
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:14px 22px 0;max-width:1060px;margin:0 auto;
+           scrollbar-width:thin}
+  .tab{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;
+       padding:8px 14px;cursor:pointer;font:600 13.5px/1 var(--sans);white-space:nowrap;transition:.16s;
+       position:relative;top:1px}
+  .tab:hover{border-color:var(--accent);color:var(--ink)}
+  .tab .n{font:700 10px/1 var(--mono);color:var(--accent);margin-right:6px}
+  .tab[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab[aria-selected=true] .n{color:#9db0ff}
+
+  main{max-width:1060px;margin:0 auto;padding:28px 22px 90px}
+  .unit{display:none;animation:fade .3s ease}.unit.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .uhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+  .ubadge{font:700 12px/1 var(--mono);color:#fff;background:var(--accent);padding:6px 9px;border-radius:7px}
+  .uhead h2{font-size:clamp(20px,2.8vw,27px)}
+  .utag{color:var(--muted);font-size:14.5px;margin:3px 0 22px;max-width:70ch}
+
+  .lab{display:flex;align-items:center;gap:9px;margin:28px 0 12px}
+  .lab .i{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:13px;
+          background:var(--accent-soft);color:var(--accent)}
+  .lab h3{font-size:14.5px}
+  .lab .hint{margin-left:auto;font:500 12px/1 var(--mono);color:var(--muted)}
+
+  /* accordions */
+  .acc{display:grid;gap:9px}
+  details.c{background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);overflow:hidden}
+  details.c>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:11px;
+                    font-weight:600;font-size:15.5px}
+  details.c>summary::-webkit-details-marker{display:none}
+  .c .dot{width:8px;height:8px;border-radius:2px;background:var(--line);flex:0 0 auto}
+  details.c[open] .dot{background:var(--accent)}
+  .c .chev{margin-left:auto;color:var(--muted);transition:.2s}
+  details.c[open] .chev{transform:rotate(90deg)}
+  .c .body{padding:0 16px 16px 35px;font-size:14.5px;color:#2a3446}
+  .c .body p{margin:.5em 0}.c .body ul{margin:.4em 0;padding-left:18px}.c .body li{margin:.3em 0}
+  .amp{margin-top:10px;padding:11px 13px;border-radius:9px;background:var(--pro-soft);
+       border:1px solid #e3d8ff;font-size:13.7px;color:#3a2c60}
+  .amp b{color:var(--pro)}
+  .cite{font:600 11.5px/1.4 var(--mono);color:var(--pro);display:inline-block;margin-top:3px}
+
+  /* flip cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px}
+  .flip{perspective:1100px;height:150px;cursor:pointer}
+  .fi{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,.15,.2,1);transform-style:preserve-3d}
+  .flip.f .fi{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:11px;border:1px solid var(--line);
+        padding:15px;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+  .face.fr{background:#fff}.face.bk{background:var(--ink);color:#eaf0fb;transform:rotateY(180deg);border-color:var(--ink)}
+  .face .k{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  .face.bk .k{color:#9db0ff}
+  .face .q{font-weight:600;font-size:15.5px;margin-top:7px}
+  .face .a{font-size:13.3px;margin-top:5px;overflow:auto}.face .a .mono{color:#8ff0e2}
+  .flip .t{margin-top:auto;font:500 11px/1 var(--mono);color:var(--muted)}.face.bk .t{color:#93a1c2}
+
+  /* widgets */
+  .w{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px;margin-top:4px}
+  .w h4{font-size:15.5px;margin-bottom:3px}.w .ws{color:var(--muted);font-size:13.3px;margin:0 0 14px}
+  .btn{border:1px solid var(--ink);background:var(--ink);color:#fff;font:600 13px/1 var(--sans);padding:9px 14px;border-radius:8px;cursor:pointer}
+  .btn:hover{background:#26324a}.btn.g{background:#fff;color:var(--ink)}.btn.g:hover{background:var(--surface2)}
+  .ctl{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
+  /* fde */
+  .fde{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:2px 0 14px}
+  .stg{border:1px solid var(--line);border-radius:11px;padding:14px;background:var(--surface2);transition:.3s}
+  .stg .sn{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .stg .st{font-weight:700;font-size:16px;margin:7px 0 5px}.stg .sd{font-size:12px;color:var(--muted)}
+  .stg.a{background:#fff;border-color:var(--hot);box-shadow:0 0 0 3px var(--hot-soft,#fde6f0)}
+  .stg.a .sn{color:var(--hot)}.stg.d{border-color:var(--ok)}
+  .ro{font-family:var(--mono);font-size:12.5px;background:var(--ink);color:#e7ecf7;padding:12px 14px;border-radius:9px;min-height:42px;line-height:1.5}
+  .ro b{color:#7fe7d6}
+
+  /* register explorer */
+  .rmap{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+  .reg{border:1px solid var(--line);background:var(--surface2);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:.14s}
+  .reg:hover{border-color:var(--accent);background:#fff;transform:translateY(-2px)}
+  .reg .rn{font:700 13px/1 var(--mono)}.reg .rl{font-size:10px;color:var(--muted);margin-top:3px}
+  .reg[data-c=arg]{background:#eaf7f4}.reg[data-c=pre]{background:#fdefe8}.reg[data-c=spec]{background:#eef0ff}
+  .reg.s{border-color:var(--hot);box-shadow:0 0 0 3px #fde6f0;background:#fff}
+  .rdet{background:var(--ink);color:#e7ecf7;border-radius:10px;padding:15px}
+  .rdet .rdn{font:700 15px/1 var(--mono);color:#7fe7d6}.rdet .rdr{font-size:13px;margin-top:7px;color:#ccd6ea}
+  .flags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .flg{border:1px solid var(--line);border-radius:8px;padding:9px 13px;text-align:center;background:var(--surface2);cursor:pointer}
+  .flg:hover{border-color:var(--accent)}.flg .fn{font:700 15px/1 var(--mono);color:var(--hot)}.flg .fl{font-size:10.5px;color:var(--muted);margin-top:2px}
+
+  /* bit playground */
+  .brow{display:grid;grid-template-columns:110px 1fr;gap:11px;align-items:center;margin:7px 0}
+  .brow .rl{font:600 12px/1 var(--mono);color:var(--muted)}
+  .byte{display:flex;gap:5px;flex-wrap:wrap}
+  .cell{width:33px;height:33px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;
+        font:700 14px/1 var(--mono);cursor:pointer;user-select:none;background:#fff;transition:.12s}
+  .cell.one{background:var(--hot);color:#fff;border-color:var(--hot)}
+  .cell.res{cursor:default}.cell.res.one{background:var(--ok);border-color:var(--ok)}
+  .ops{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px}
+  .op{border:1px solid var(--line);background:#fff;font:700 12.5px/1 var(--mono);padding:9px 12px;border-radius:8px;cursor:pointer}
+  .op:hover{border-color:var(--accent)}.op.s{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .expr{font:600 14px/1.4 var(--mono);margin-top:9px}.expr .h{color:var(--hot)}.expr .o{color:var(--ok)}
+
+  /* gpio stepper */
+  .steps{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .sd{flex:1;min-width:88px;border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;background:var(--surface2);cursor:pointer;transition:.14s}
+  .sd .n{font:700 10px/1 var(--mono);color:var(--muted)}.sd .tt{font:600 12px/1.2 var(--sans);margin-top:4px}
+  .sd.a{background:#fff;border-color:var(--hot);box-shadow:0 0 0 3px #fde6f0}.sd.a .n{color:var(--hot)}
+  .sbody{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .sbody h5{margin:0 0 5px;font-size:14.5px}.sbody p{margin:0 0 9px;font-size:13.3px;color:#2a3446}
+  .led{display:inline-flex;align-items:center;gap:8px;font:600 12px/1 var(--mono);margin-top:6px;color:var(--muted)}
+  .led .b{width:13px;height:13px;border-radius:50%;background:var(--line);transition:.3s}
+  .led.on .b{background:var(--hot);box-shadow:0 0 11px var(--hot)}
+  pre.code{background:var(--ink);color:#e7ecf7;font-family:var(--mono);font-size:12px;padding:11px 13px;border-radius:8px;overflow:auto;margin:9px 0 0;line-height:1.5}
+  pre.code .c{color:#7d8bb0}
+
+  /* systick calc */
+  .calc{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
+  .fld label{display:block;font:600 12px/1 var(--mono);color:var(--muted);margin-bottom:5px}
+  .fld select,.fld input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:600 13.5px/1 var(--mono);background:#fff;color:var(--ink)}
+  .fld select:focus,.fld input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .cout{grid-column:1/-1;background:var(--ink);color:#e7ecf7;border-radius:10px;padding:15px;font-family:var(--mono);font-size:13.5px}
+  .cout .big{font-size:21px;font-weight:700;color:#7fe7d6}.cout .f{color:#9fb0d4;font-size:12px;margin-top:5px}
+
+  /* filterable table */
+  .filt{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .filt input[type=search]{flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:500 14px/1 var(--sans);background:#fff}
+  .filt input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .chip{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:6px 12px;cursor:pointer;font:600 12.5px/1 var(--sans);transition:.14s}
+  .chip:hover{border-color:var(--accent)}.chip.s{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff}
+  thead th{background:var(--surface2);text-align:left;padding:10px 13px;font-weight:600;border-bottom:2px solid var(--line);white-space:nowrap}
+  tbody td{padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--accent-soft)}
+  td .mono{background:var(--surface2);padding:1px 6px;border-radius:5px;font-size:12.5px}
+  .catpill{font:600 11px/1 var(--sans);padding:3px 8px;border-radius:20px;white-space:nowrap}
+  .cat-ari{background:#e6f0ff;color:#2b5bbf}.cat-log{background:#e9f7ee;color:#1f8a4c}
+  .cat-shf{background:#f3ecff;color:#6b34d6}.cat-mem{background:#fdeede;color:#b9781a}
+  .cat-cmp{background:#ffe9f1;color:#c31e63}.cat-ctl{background:#e5f4f6;color:#0e8ea0}
+  .nomatch{padding:16px;text-align:center;color:var(--muted);font-size:14px;display:none}
+
+  /* pipeline (reuses .stg/.ro) */
+  .pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:2px 0 14px}
+
+  /* driver toggle (reuses .ops/.op/.ro/pre.code) */
+  #w-drv .ro b{color:#7fe7d6}
+
+  /* mef simulator */
+  .mef-nodes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 4px}
+  .mnode{border:1px solid var(--line);border-radius:10px;padding:11px 8px;text-align:center;background:var(--surface2);transition:.2s}
+  .mnode .mk{font:700 10px/1 var(--mono);letter-spacing:.06em;color:var(--muted)}
+  .mnode .ml{font:600 12.5px/1.2 var(--sans);margin-top:5px}
+  .mnode.a{background:#fff;border-color:var(--hot);box-shadow:0 0 0 3px #fde6f0}
+  .mnode.a .mk{color:var(--hot)}
+  .mef-out{margin-top:12px}.mef-out .led{color:var(--muted)}
+
+  /* bibliography */
+  .book{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px 15px 22px;box-shadow:var(--shadow);margin-bottom:11px}
+  .book::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;border-radius:12px 0 0 12px;background:var(--accent)}
+  .book.k2::before{background:var(--pro)}.book.k3::before{background:#2b6cb0}.book.k4::before{background:var(--warn)}.book.k5::before{background:var(--hot)}
+  .book .bt{font-weight:700;font-size:16px}.book .ba{color:var(--muted);font-size:13.3px;margin:2px 0 7px}
+  .book .bw{font-size:13.8px}.book .bm{font:600 12px/1.4 var(--mono);color:var(--muted);margin-top:6px}
+  .pill{display:inline-block;font:600 11px/1 var(--sans);color:#fff;background:var(--accent);border-radius:20px;padding:3px 9px;margin-left:6px;vertical-align:middle}
+  .pill.core{background:var(--pro)}.pill.free{background:#2f9e57}
+
+  footer{max-width:1060px;margin:0 auto;padding:22px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+  a.skip{position:absolute;left:-9999px}a.skip:focus{left:12px;top:12px;background:#fff;padding:8px 12px;border-radius:8px;z-index:99;box-shadow:var(--shadow)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+  @media (max-width:620px){.fde{grid-template-columns:1fr}.pipe{grid-template-columns:1fr 1fr}.mef-nodes{grid-template-columns:1fr 1fr}.rmap{grid-template-columns:repeat(2,1fr)}.calc{grid-template-columns:1fr}.brow{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="top">
+  <div class="head-in">
+    <div class="course">Microprocesadores · Ingeniería · Notas de estudio</div>
+    <h1>ARM Cortex-M4 — del procesador al GPIO</h1>
+    <p class="sub">Teoría ampliada más allá de las diapositivas, con tarjetas, calculadoras en vivo, tablas filtrables y bibliografía cruzada. Mismo formato que tus notas de SDEE y Sistemas de Comunicaciones.</p>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Unidades"></nav>
+</header>
+<main id="main"></main>
+<footer>Notas de repaso · la teoría "más allá" se apoya en la bibliografía verificada (ver pestaña 📚). Las soluciones son guía de estudio.</footer>
+
+<script>
+const B = { // bibliografía (para citar)
+  zhu:"Yifeng Zhu — Embedded Systems with ARM Cortex-M (Assembly & C), 4ª ed.",
+  yiu:"Joseph Yiu — The Definitive Guide to Cortex-M3/M4, 3ª ed.",
+  ph:"Patterson & Hennessy — Computer Organization and Design (ARM Ed.)",
+  n2t:"Nisan & Schocken — The Elements of Computing Systems (Nand2Tetris)",
+  hd:"Henry Warren — Hacker's Delight, 2ª ed.",
+  rm:"STM32F407 Reference Manual (RM0090)",
+  pm:"STM32 Cortex-M4 Programming Manual (PM0214)"
+};
+
+const UNITS = [
+ {id:"s1",n:"S1",title:"Componentes de un procesador",
+  tag:"CPU, ALU, registros, buses, memoria y el ciclo fetch-decode-execute.",widget:"fde",
+  acc:[
+   ["CPU y ALU","<p>La <b>CPU</b> lee, decodifica y ejecuta instrucciones. La <b>ALU</b>, dentro de ella, hace operaciones aritméticas y lógicas.</p>",
+     ["Un procesador no es solo la ALU: incluye la ruta de datos (datapath) y la unidad de control que la gobierna. Verlos por separado ayuda a entender por qué una instrucción tarda ciertos ciclos.","ph"]],
+   ["Registros (PC, SP)","<p>Memoria diminuta y rapidísima dentro de la CPU. <b>PC</b> = dirección de la próxima instrucción; <b>SP</b> = tope de la pila.</p>",
+     ["Acceder a un registro es ~1 ciclo; a la RAM externa, decenas. Por eso los compiladores luchan por mantener las variables 'calientes' en registros (register allocation).","ph"]],
+   ["Buses y memoria","<p>Buses de <b>datos</b>, <b>direcciones</b> y <b>control</b>. <b>RAM</b> volátil (datos) vs <b>ROM/Flash</b> persistente (programa).</p>",
+     ["El ancho del bus de direcciones fija cuánta memoria se puede direccionar (32 bits → 4 GB). En Cortex-M el mapa de 4 GB es fijo aunque el chip tenga mucha menos memoria real.","rm"]],
+   ["Ciclo fetch-decode-execute","<p><b>Fetch</b> (busca con el PC) → <b>Decode</b> (interpreta) → <b>Execute</b> (realiza y avanza el PC). Se repite sin parar.</p>",
+     ["El simulador 'Digital'/Hack de la clase (instrucción tipo A vs tipo C, ROM→CPU) es exactamente la arquitectura del libro Nand2Tetris. Leerlo te muestra cómo se construye cada pieza desde una compuerta NAND.","n2t"]]
+  ],
+  cards:[["¿Dónde está la ALU?","Dentro de la CPU; hace operaciones aritméticas y lógicas."],
+   ["PC vs SP","PC = próxima instrucción · SP = tope de la pila."],
+   ["¿Qué es ensamblar?","Convertir Assembly → lenguaje de máquina (1:1)."],
+   ["Little-endian","ARM guarda el byte menos significativo primero."],
+   ["¿Por qué el PC va +4?","Por el pipeline: leerlo da la dirección actual + 4."]]
+ },
+ {id:"s2",n:"S2",title:"Arquitecturas de microprocesadores",
+  tag:"Harvard vs von Neumann · RISC vs CISC · por qué ARM elige Harvard modificada + RISC.",
+  acc:[
+   ["von Neumann vs Harvard","<p><b>von Neumann</b>: memoria única (cuello de botella). <b>Harvard</b>: memorias/buses separados (acceso simultáneo).</p>",
+     ["ARM usa <b>Harvard modificada</b>: buses internos separados (I-Code/D-Code) pero un solo espacio de direcciones para el programador. Ganas paralelismo sin complicar el modelo de memoria.","yiu"]],
+   ["RISC vs CISC","<p><b>CISC</b> (x86): instrucciones complejas, tamaño variable. <b>RISC</b> (ARM): simples, tamaño fijo, muchos registros, arquitectura Load/Store.</p>",
+     ["La frontera es borrosa: los x86 modernos traducen internamente sus instrucciones CISC a micro-operaciones tipo RISC. RISC-V lleva la idea RISC a una ISA abierta y libre.","ph"]],
+   ["¿Por qué ARM = RISC?","<p>Instrucciones simples → pipeline eficiente, menos transistores → bajo consumo. Ideal para embebidos.</p>",
+     ["Load/Store (solo LDR/STR tocan memoria) mantiene las demás instrucciones a 1 ciclo y hace el hardware predecible — clave para el determinismo en tiempo real.","zhu"]]
+  ],
+  cards:[["Cuello de botella","No se accede a código y dato a la vez (von Neumann)."],
+   ["Load/Store","Solo LDR/STR tocan memoria (rasgo RISC)."],
+   ["RISC-V","ISA abierta y libre; alternativa a ARM."],
+   ["x86 por dentro","Traduce CISC a micro-ops tipo RISC."],
+   ["Registros x86 vs ARM","8 (8086) vs 16 (ARM)."]]
+ },
+ {id:"s3",n:"S3",title:"Arquitectura ARM Cortex-M4",
+  tag:"Familias Cortex, pipeline, NVIC, Thumb-2, mapa de memoria y buses.",widget:"none",
+  acc:[
+   ["Familias y specs del M4","<p>Cortex-<b>A</b> (potencia) · <b>R</b> (tiempo real) · <b>M</b> (bajo consumo). El M4: ARMv7-M, pipeline de 3 etapas, hasta 168 MHz, FPU opcional, DSP.</p>",
+     ["El M4 añade instrucciones DSP (SIMD) y una FPU de precisión simple (FPv4-SP): puede hacer un multiply-accumulate por ciclo, útil en filtros y control.","yiu"]],
+   ["Pipeline de 3 etapas","<p>Fetch → Decode → Execute solapadas. Un salto vacía (flush) el pipeline; algunas instrucciones causan stall.</p>",
+     ["Por eso los bloques IT (If-Then) de Thumb-2 permiten ejecutar hasta 4 instrucciones condicionalmente sin saltar: evitan el flush y son más rápidos que un branch.","yiu"]],
+   ["NVIC e interrupciones","<p>Controlador de interrupciones anidadas: hasta 240, 16 niveles de prioridad, anidación automática, latencia ~12 ciclos.</p>",
+     ["Al entrar a una excepción, el hardware apila R0-R3, R12, LR, PC y xPSR automáticamente: por eso un handler simple 'ya está listo' sin guardar todo a mano.","yiu"]],
+   ["Mapa de memoria y buses","<p>4 GB fijos: CODE, SRAM, Periféricos, zona privada (NVIC, SysTick). Buses AHB &gt; APB2 &gt; APB1.</p>",
+     ["Bit-banding: una región 'alias' donde cada bit de la SRAM/periféricos se mapea a una palabra completa → leer/escribir 1 bit de forma atómica sin read-modify-write. CMSIS estandariza los nombres de todo esto.","yiu"]]
+  ],
+  cards:[["Etapas del pipeline","3: fetch, decode, execute."],
+   ["Bus más rápido","AHB (hasta 168 MHz)."],
+   ["¿Qué es el NVIC?","Controlador de interrupciones anidadas con prioridades."],
+   ["Bit-banding","Acceso atómico a un bit vía región alias."],
+   ["CMSIS","Capa estándar de ARM: registros y funciones portables."],
+   ["Vector table","Direcciones de handlers; 1ª=SP inicial, 2ª=Reset."]]
+ },
+ {id:"s4",n:"S4",title:"Instruction Set Architecture (ISA)",
+  tag:"Los 16 registros, flags APSR, mapa de memoria, .syntax unified y movimiento de datos.",widget:"reg",
+  acc:[
+   ["Registros y AAPCS","<p><b>R0-R3</b> argumentos/retorno (volátiles), <b>R4-R11</b> preservados, <b>R12</b> scratch, <b>R13</b>=SP, <b>R14</b>=LR, <b>R15</b>=PC.</p>",
+     ["El AAPCS (convención de llamada) dice quién guarda qué: por eso una función que usa R4-R11 debe hacer PUSH/POP de ellos, y guardar LR si llama a otras funciones.","zhu"]],
+   ["Flags APSR","<p><b>N</b>egative · <b>Z</b>ero · <b>C</b>arry · o<b>V</b>erflow. Los actualizan CMP y las instrucciones con sufijo S.</p>",
+     ["C es para aritmética SIN signo (acarreo) y V para CON signo (rango excedido): son independientes. Un mismo ADD puede activar C sin V, o V sin C.","hd"]],
+   ["Mover datos","<p><span class='mono'>MOV</span> entre registros/inmediato; <span class='mono'>LDR/STR</span> con memoria. Nunca MOV directo a memoria.</p>",
+     ["El barrel shifter deja incluir un desplazamiento GRATIS en el 2º operando: <span class='mono'>ADD R0,R1,R2,LSL #3</span> = R1 + R2×8 en un ciclo. Y <span class='mono'>LDR R0,=k</span> es pseudo-instrucción (usa un literal pool).","yiu"]]
+  ],
+  cards:[["Volátiles","R0-R3 y R12 (no se preservan)."],
+   ["Preservados","R4-R11 (callee-saved: PUSH/POP)."],
+   ["¿Para qué LR?","Guarda la dirección de retorno; se vuelve con BX LR."],
+   ["Flags de CMP","N, Z, C, V (como una resta sin guardar)."],
+   ["Barrel shifter","Operand2 puede venir desplazado gratis."],
+   ["LDR =valor","Pseudo-instrucción: carga desde un literal pool."]]
+ },
+ {id:"s5",n:"S5",title:"Operaciones aritméticas y lógicas",
+  tag:"Aritmética, máscaras de bits, desplazamientos, AAPCS, control de flujo — con tabla filtrable.",widget:"bitlab",table:"isa",
+  acc:[
+   ["Aritmética y flags","<p><span class='mono'>ADD SUB MUL UDIV/SDIV</span>. El sufijo <b>S</b> actualiza flags. No hay módulo: <span class='mono'>mod = div − (coc×divisor)</span>.</p>",
+     ["Multiplicar por una constante suele ser más rápido con shift+add que con MUL: <span class='mono'>×10 = (x&lt;&lt;3)+(x&lt;&lt;1)</span>. Restar es sumar el complemento a 2.","hd"]],
+   ["Máscaras de bits","<p><b>AND</b> leer/aislar · <b>ORR</b> encender · <b>EOR</b> invertir (toggle) · <b>BIC</b> limpiar.</p>",
+     ["Patrón universal para tocar bits de un registro sin dañar el resto: <b>BIC</b> limpia con la máscara y luego <b>ORR</b> pone el valor. Practícalo en el laboratorio de bits de abajo.","zhu"]],
+   ["Desplazamientos y DSP","<p><span class='mono'>LSL</span> ×2ⁿ · <span class='mono'>LSR</span> ÷2ⁿ (sin signo) · <span class='mono'>ASR</span> ÷2ⁿ (con signo) · <span class='mono'>ROR</span> rotación.</p>",
+     ["El M4 añade aritmética con saturación (ej. <span class='mono'>QADD</span>): topa en el máx/mín en vez de desbordar. Esencial en audio y procesamiento de señales para evitar 'clics'.","hd"]],
+   ["Control de flujo y funciones","<p>CMP + salto condicional (BEQ, BNE, BGT…) construyen if/while/for. BL llama funciones (guarda retorno en LR).</p>",
+     ["Como BL sobrescribe LR, una función que llama a otra debe hacer <span class='mono'>PUSH {..,LR}</span> al entrar y <span class='mono'>POP {..,PC}</span> al salir (retorna cargando PC directamente).","zhu"]]
+  ],
+  cards:[["LSL R0,R0,#2","Multiplica R0 por 4."],
+   ["Limpiar bit 3","BIC R0,R0,#(1<<3)."],
+   ["×5 sin MUL","LSL R1,R0,#2 ; ADD R0,R1,R0."],
+   ["Carry vs oVerflow","C = sin signo · V = con signo."],
+   ["UDIV vs SDIV","Sin signo vs con signo."],
+   ["B vs BL","B salta · BL llama y guarda retorno en LR."]]
+ },
+ {id:"s6",n:"S6",title:"Configurar un GPIO",
+  tag:"Los 5 pasos para encender un LED en el STM32F407 — con la joya del BSRR atómico.",widget:"gpio",
+  acc:[
+   ["Los 5 pasos","<p>1) Clock (RCC_AHB1ENR) → 2) MODER (salida) → 3) OTYPER (push-pull) → 4) OSPEEDR → 5) PUPDR (sin pull).</p>",
+     ["Cada paso sigue el mismo patrón: leer el registro → BIC (limpiar) → ORR (poner) → escribir. Los offsets y bits exactos están en el RM0090, capítulo de GPIO.","rm"]],
+   ["Push-pull y velocidad","<p>OTYPER 0 = push-pull (maneja 0 y 3.3V, ideal LED). 'Speed' en OSPEEDR = <b>slew rate</b>, no frecuencia.</p>",
+     ["Máxima velocidad sin necesidad genera EMI, ringing (por la inductancia de las pistas) y switching noise. Se elige la velocidad mínima que cumpla el tiempo de subida requerido.","rm"]],
+   ["Escritura atómica (BSRR)","<p>Para poner/borrar pines usa <b>BSRR</b>: un solo STR, atómico. Bits 0-15 ponen a 1; bits 16-31 ponen a 0.</p>",
+     ["La secuencia LDR/BIC/ORR/STR (read-modify-write) NO es atómica: si una interrupción cae en medio y toca el mismo puerto, se corrompe. BSRR (y el bit-banding) evitan esa condición de carrera.","yiu"]]
+  ],
+  cards:[["Orden","Clock→MODER→OTYPER→OSPEEDR→PUPDR."],
+   ["¿Clock primero?","Sí: sin reloj el periférico no responde."],
+   ["Push-pull vs open-drain","PP maneja 0 y 3.3V; OD solo tira a 0."],
+   ["'Speed' real","Slew rate (dV/dt), no frecuencia."],
+   ["BSRR","Set/reset de pines atómico con un STR."],
+   ["¿Por qué no RMW?","No es atómico: interrupción → condición de carrera."]]
+ },
+ {id:"st",n:"⏳",title:"Módulo SysTick",
+  tag:"Temporizador de 24 bits del Cortex-M4 — con calculadora de LOAD en vivo.",widget:"systick",
+  acc:[
+   ["Funcionamiento","<p>Contador <b>descendente de 24 bits</b>. Al llegar a 0 activa bandera y (opcional) interrupción, se recarga solo y repite.</p>",
+     ["Se recarga automáticamente justo para dar una base de tiempo periódica (el 'tick' del sistema) sin reconfigurarlo cada vez — la base de un scheduler de RTOS.","zhu"]],
+   ["Registros y LOAD","<p><span class='mono'>CSR</span> (control), <span class='mono'>RVR/LOAD</span> (recarga), <span class='mono'>CVR/VAL</span> (actual). <span class='mono'>LOAD = (Frec × Retardo) − 1</span>.</p>",
+     ["Escribir cualquier valor en CVR lo limpia a 0 y borra COUNTFLAG: por eso el paso 3 de la configuración garantiza un arranque limpio. Está descrito en el PM0214.","pm"]],
+   ["Buenas prácticas del handler","<p>Config: ENABLE=0 → RVR → limpiar CVR → CLKSOURCE/TICKINT → ENABLE=1.</p>",
+     ["El handler debe ser CORTO (se ejecuta en cada tick). Las variables compartidas con el main van como <span class='mono'>volatile</span>; para bajo consumo se usa 'tickless' (dormir más y ajustar el tick).","yiu"]]
+  ],
+  cards:[["¿Cuántos bits?","24, descendente."],
+   ["LOAD 1ms@16MHz","(16 000 000×0.001)−1 = 15999."],
+   ["Escribir en CVR","Lo limpia a 0 y borra COUNTFLAG."],
+   ["¿Qué hace WFI?","Duerme la CPU hasta la próxima interrupción."],
+   ["Handler","Corto; variables compartidas volatile."]]
+ },
+ {id:"c1",n:"C1",title:"Lenguaje C para embebidos",badge:"Fundamentos C",
+  tag:"Por qué C en embebidos, C bare-metal vs C estándar, el pipeline de compilación y volatile.",widget:"pipeline",
+  acc:[
+   ["C vs Assembly","<p>C da <b>control de bajo nivel</b> casi como ensamblador pero con abstracciones: más legible, portable y rápido de desarrollar. Ensamblador da control total, pero es difícil de mantener.</p>",
+     ["Con optimización (−O2/−O3) el tamaño y la velocidad del C se acercan al ensamblador escrito a mano: el compilador aplica las mismas transformaciones (asignación de registros, reordenamiento) de forma sistemática. Casi siempre gana escribir en C y bajar a ensamblador solo el punto crítico.","ph"]],
+   ["C bare-metal (sin SO)","<p>Sin sistema operativo <b>no hay</b> <span class='mono'>malloc/free</span>, <span class='mono'>printf</span> ni archivos. Sí hay tipos (<span class='mono'>uint32_t</span>), operadores, control de flujo, punteros, <span class='mono'>struct/union</span> y macros.</p>",
+     ["El <span class='mono'>main()</span> nunca retorna: termina en un <span class='mono'>while(1)</span>. Antes de él, el código de arranque (startup + Reset_Handler) copia <span class='mono'>.data</span> de Flash a RAM y pone <span class='mono'>.bss</span> a cero — por eso una global inicializada 've' su valor.","zhu"]],
+   ["El pipeline de compilación","<p><span class='mono'>.c → .i</span> (preprocesa) <span class='mono'>→ .s</span> (compila a ensamblador) <span class='mono'>→ .o</span> (ensambla a binario) <span class='mono'>→ ejecutable</span> (enlaza). Míralo paso a paso arriba.</p>",
+     ["En bare-metal el enlazador usa un <b>linker script</b> (<span class='mono'>.ld</span>) que ubica cada sección: <span class='mono'>.text</span> en Flash (0x0800…), <span class='mono'>.data/.bss/stack</span> en SRAM (0x2000…). Sin él, el binario no sabría dónde vivir en el chip.","zhu"]],
+   ["volatile, struct y union","<p><b>volatile</b> obliga a leer/escribir la memoria real en cada acceso (registros de hardware, variables de ISR). <b>union</b> comparte memoria: útil para ver un <span class='mono'>float</span> como 4 bytes.</p>",
+     ["Sin <span class='mono'>volatile</span>, el compilador puede 'optimizar' y eliminar una segunda escritura al mismo registro creyéndola redundante — y romper el driver. Regla: <span class='mono'>volatile</span> en punteros a hardware y en variables compartidas entre <span class='mono'>main</span> e ISR.","yiu"]],
+   ["Estructura de un proyecto bare-metal","<p>En STM32CubeIDE el proyecto tiene carpetas fijas: <b>Startup</b> (<span class='mono'>startup_stm32f407vetx.s</span>), <b>Inc</b> (cabeceras <span class='mono'>.h</span> propias), <b>Src</b> (<span class='mono'>main.c</span>, <span class='mono'>syscalls.c</span>, <span class='mono'>sysmem.c</span>) y los <b>linker scripts</b> <span class='mono'>FLASH.ld</span> / <span class='mono'>RAM.ld</span>.</p><p>El arranque es: <b>Reset</b> → <span class='mono'>startup.s</span> (inicializa el MSP, copia <span class='mono'>.data</span> de Flash a RAM, pone <span class='mono'>.bss</span> a cero) → salto a <span class='mono'>main()</span>.</p>",
+     ["El <b>linker script</b> le dice al enlazador la topología real del chip: <span class='mono'>.text</span> en Flash (0x08000000) y <span class='mono'>.data/.bss</span>/stack/heap en SRAM (0x20000000). <span class='mono'>sysmem.c</span> aporta <span class='mono'>_sbrk()</span> (para malloc) y <span class='mono'>syscalls.c</span> redirige <span class='mono'>printf/read/write</span> hacia UART o ITM — por eso 'imprimir' funciona sin un SO.","zhu"]],
+   ["Operadores a nivel de bits (con ejemplos)","<p>Con <span class='mono'>a=0x5A</span> (01011010) y <span class='mono'>b=0x3C</span> (00111100):</p><pre class='code'>a &amp; b  = 0x18   <span class='c'>// AND: 1 solo si ambos son 1</span>\na | b  = 0x7E   <span class='c'>// OR:  1 si al menos uno es 1</span>\na ^ b  = 0x66   <span class='c'>// XOR: 1 si son distintos</span>\na &lt;&lt; 2 = 0xB4   <span class='c'>// LSL: ×4 (rellena con 0)</span>\na &gt;&gt; 2 = 0x16   <span class='c'>// LSR: ÷4</span></pre>",
+     ["Son los mismos operadores que en ensamblador (AND/ORR/EOR/BIC/LSL/LSR). En embebidos casi todo pasa por aquí: <span class='mono'>&amp;</span> aísla/lee, <span class='mono'>|</span> enciende, <span class='mono'>^</span> conmuta (toggle) y <span class='mono'>&amp; ~</span> limpia. Practícalos en el laboratorio de bits de la Sesión 5.","hd"]],
+   ["Directivas del preprocesador y macros","<p><b>Compilación condicional</b>: <span class='mono'>#ifdef / #elif / #else / #endif</span> elige qué código compilar según un <span class='mono'>#define</span>. <b>Macros tipo función</b>: <span class='mono'>#define SQUARE(x) ((x)*(x))</span> — siempre con paréntesis para evitar sorpresas de precedencia.</p>",
+     ["El patrón clásico en embebidos es una macro para tocar un campo de registro sin dañar el resto: <span class='mono'>MODIFY_REG_FIELD(REG,MASK,VAL)</span> = limpiar con <span class='mono'>~MASK</span> y luego <span class='mono'>|= VAL</span>. Otras útiles: <span class='mono'>TOGGLE_BIT(REG,POS)</span> con EOR y <span class='mono'>CHECK_PERIPH_CLK(REG,BIT)</span> para saber si un reloj está activo.","zhu"]]
+  ],
+  cards:[["¿Por qué C?","Bajo nivel + legible, portable y mantenible."],
+   ["Carpetas del proyecto","Startup · Inc · Src · linker scripts (.ld)."],
+   ["¿Qué hace startup.s?","Inicializa MSP, copia .data, limpia .bss, salta a main."],
+   ["a & ~MASK","Limpia (pone a 0) los bits de la máscara."],
+   ["#ifdef … #endif","Compila un bloque solo si el símbolo está definido."],
+   ["Macro con paréntesis","SQUARE(x) ((x)*(x)) evita errores de precedencia."],
+   ["main() en bare-metal","Nunca retorna: termina en while(1)."],
+   ["Sin malloc","No hay memoria dinámica ni printf de serie."],
+   [".c → .i → .s → .o","Preprocesa, compila, ensambla, enlaza."],
+   ["¿Qué hace el linker script?","Ubica .text/.data/.bss en Flash y RAM."],
+   ["¿Por qué volatile?","Evita que el compilador elimine accesos a hardware."]]
+ },
+ {id:"c2",n:"C2",title:"Drivers Bare-Metal en C",badge:"Drivers en C",
+  tag:"Acceder a registros con punteros y volatile, el patrón read-modify-write y el enfoque CMSIS con struct.",widget:"driver",
+  acc:[
+   ["Mapeo de memoria con punteros","<p>Un registro es una dirección fija. Se accede con un <span class='mono'>#define</span> que castea a puntero volátil: <span class='mono'>*((volatile uint32_t*)(BASE+OFFSET))</span>.</p>",
+     ["Es el mismo <span class='mono'>LDR</span> base+offset del ensamblador, escrito una sola vez como macro. El <span class='mono'>volatile</span> es obligatorio: sin él el compilador podría cachear el valor en un registro y no volver a leer el hardware.","zhu"]],
+   ["Read-Modify-Write","<p>Para tocar unos bits sin dañar el resto: <b>limpiar</b> con <span class='mono'>REG &amp;= ~MASK</span> (= BIC) y <b>poner</b> con <span class='mono'>REG |= VALOR</span> (= ORR).</p>",
+     ["Es exactamente el patrón LDR/BIC/ORR/STR del ensamblador. Ojo: <b>no es atómico</b> — si una interrupción cae en medio y toca el mismo registro, se corrompe. Por eso GPIO ofrece <span class='mono'>BSRR</span> (set/reset en un solo STR).","yiu"]],
+   ["Enfoque CMSIS (struct →)","<p>En vez de un <span class='mono'>#define</span> por registro, se define una <span class='mono'>struct</span> cuyos campos caen en los offsets exactos. Se accede con <span class='mono'>GPIOA-&gt;MODER</span>. Compáralo arriba.</p>",
+     ["Funciona porque los <span class='mono'>uint32_t</span> ocupan 4 bytes contiguos y el compilador asigna los offsets solo (0x00, 0x04, 0x08…). Los huecos del hardware se rellenan con campos <span class='mono'>RESERVED</span> para mantener la alineación. Es lo que hace <span class='mono'>stm32f4xx.h</span> por ti.","yiu"]],
+   ["stm32f4xx.h y seguridad","<p>La cabecera oficial de ST trae structs, direcciones base, máscaras con nombre (<span class='mono'>RCC_AHB1ENR_GPIOAEN</span>) y la tabla de interrupciones — código legible sin números mágicos.</p>",
+     ["Nota de hardware: al usar pines en push-pull, dimensiona los componentes para que la corriente total del chip quede por debajo de ~200 mA (límite del STM32F407). Un LED siempre va con su resistencia, nunca directo al pin.","rm"]],
+   ["La struct CMSIS por dentro","<p>El truco es que los <span class='mono'>volatile uint32_t</span> ocupan 4 bytes contiguos, así que el orden de los campos reproduce los offsets del hardware. Los huecos se rellenan con campos <span class='mono'>RESERVED</span>:</p><pre class='code'>typedef struct {\n  volatile uint32_t MODER;    <span class='c'>// 0x00</span>\n  volatile uint32_t OTYPER;   <span class='c'>// 0x04</span>\n  volatile uint32_t OSPEEDR;  <span class='c'>// 0x08</span>\n  volatile uint32_t PUPDR;    <span class='c'>// 0x0C</span>\n  volatile uint32_t IDR;      <span class='c'>// 0x10 entrada</span>\n  volatile uint32_t ODR;      <span class='c'>// 0x14 salida</span>\n  volatile uint32_t BSRR;     <span class='c'>// 0x18 set/reset atómico</span>\n  volatile uint32_t LCKR;     <span class='c'>// 0x1C</span>\n  volatile uint32_t AFR[2];   <span class='c'>// 0x20/0x24 funciones alt.</span>\n} GPIO_TypeDef;\n\n#define GPIOA ((GPIO_TypeDef*) 0x40020000U)</pre>",
+     ["En el RCC hay huecos entre registros; por eso su struct declara <span class='mono'>uint32_t RESERVED0;</span> y <span class='mono'>RESERVED1[2];</span> con el tamaño exacto del hueco para que <span class='mono'>AHB1ENR</span> caiga en su offset 0x30. Si el relleno estuviera mal, <span class='mono'>RCC-&gt;AHB1ENR</span> escribiría en el registro equivocado.","yiu"]],
+   ["Cómo obtener stm32f4xx.h","<p>Dos fuentes oficiales de ST: (1) el repositorio en GitHub <span class='mono'>STMicroelectronics/cmsis_device_f4</span> → carpeta <span class='mono'>Include/</span> (necesitas <span class='mono'>stm32f4xx.h</span> + <span class='mono'>stm32f407xx.h</span>, y <span class='mono'>core_cm4.h</span> del repo <span class='mono'>cmsis_core</span>); o (2) el paquete <b>STM32CubeF4</b> completo desde st.com.</p>",
+     ["Al compilar defines el modelo con <span class='mono'>-DSTM32F407xx</span>: la cabecera genérica detecta la macro e incluye el archivo específico. A partir de ahí tienes structs, direcciones base y máscaras con nombre (<span class='mono'>RCC_AHB1ENR_GPIOAEN</span>, <span class='mono'>GPIO_MODER_MODER6_Pos</span>) — cero números mágicos.","rm"]]
+  ],
+  cards:[["Registro en C","*((volatile uint32_t*)(BASE+OFFSET))."],
+   ["¿Por qué funciona la struct?","uint32_t = 4 bytes contiguos → offsets automáticos."],
+   ["Campos RESERVED","Rellenan los huecos del hardware (ej. RCC)."],
+   ["-DSTM32F407xx","Le dice a stm32f4xx.h qué chip incluir."],
+   ["Limpiar bits","REG &= ~MASK  (equivale a BIC)."],
+   ["Poner bits","REG |= VALOR  (equivale a ORR)."],
+   ["¿Por qué CMSIS?","La struct mapea los offsets sola; código legible."],
+   ["RESERVED","Relleno para respetar los huecos del hardware."],
+   ["→ vs #define","GPIOA->MODER o *(volatile...): mismo resultado."]]
+ },
+ {id:"c3",n:"C3",title:"Máquinas de Estados Finitos",badge:"MEF · teoría",
+  tag:"Qué es una MEF, Moore vs Mealy, diagramas y tablas de transición — con un simulador de antirrebote interactivo.",widget:"mef",table:"mef",
+  acc:[
+   ["¿Qué es una MEF?","<p>Modelo con un número <b>finito</b> de estados. En cada momento está en uno; según las <b>entradas</b> cambia o se mantiene. Se modela con <b>diagrama</b> o <b>tabla de estados</b>.</p>",
+     ["Formalmente es un autómata: estados + entradas + función de transición (+ salidas). Es la base para modelar cualquier comportamiento secuencial y traducirlo directo a código — de un semáforo a un protocolo de comunicación.","ph"]],
+   ["Moore vs Mealy","<p><b>Moore</b>: la salida depende <b>solo del estado</b> (estable). <b>Mealy</b>: depende del estado <b>y de la entrada</b> (reacciona al instante, con menos estados).</p>",
+     ["Regla práctica: si quieres salidas estables y fáciles de razonar, Moore; si necesitas respuesta inmediata a la entrada, Mealy. El antirrebote se hace en Moore porque la salida ('botón presionado') debe depender solo del estado ya confirmado.","ph"]],
+   ["Antirrebote (debounce)","<p>Un pulsador mecánico 'rebota' unos ms al conmutar. La MEF espera ~30 ms estables antes de dar por válido el cambio: ESPERA → DEBOUNCE_PRESS → PRESIONADO → DEBOUNCE_RELEASE.</p>",
+     ["El temporizador de 30 ms filtra los rebotes: solo si la señal se mantiene ese tiempo se confirma el estado, evitando lecturas falsas. Se puede hacer con polling + SysTick (sencillo) o por interrupción EXTI (más complejo, rara vez necesario aquí).","zhu"]],
+   ["Diagrama vs tabla","<p>El <b>diagrama</b> (círculos y flechas) se lee de un vistazo; la <b>tabla de transiciones</b> (estado actual · condición · estado siguiente) es la que traduces a un <span class='mono'>switch-case</span>.</p>",
+     ["Consejo: dibuja el diagrama para entender, escribe la tabla para implementar. Cada fila de la tabla es un <span class='mono'>case</span> con su condición; usa un <span class='mono'>enum</span> para los estados y evitas números mágicos.","zhu"]],
+   ["Modelado en sistemas embebidos","<p>Un modelo es una representación simplificada que captura lo esencial. Los buenos modelos son <b>abstractos</b> (se centran en lo importante), <b>comprensibles</b>, <b>precisos</b> (fieles al sistema), <b>predictivos</b> (anticipan el comportamiento) y <b>económicos</b> (más baratos de estudiar que el sistema real).</p><p>La MEF es un modelo gráfico: sirve tanto para <b>entender</b> un comportamiento secuencial como para <b>generar el código</b> directamente a partir de él.</p>",
+     ["El enfoque 'basado en modelos' es el estándar profesional: primero se modela (diagrama/tabla), luego el modelo se traduce a código de forma sistemática. Reduce errores porque razonas sobre estados y transiciones antes de escribir una sola línea.","ph"]],
+   ["Ejemplos canónicos (Moore y Mealy)","<p><b>Puerta automática (Moore)</b>: Cerrado→Abriendo→Abierto→Cerrando; la salida (Motor_ON/OFF) depende solo del estado.</p><p><b>Dispensador de bebidas (Mealy)</b>: la bomba se activa <b>solo mientras</b> el botón esté presionado — la salida depende del estado <i>y</i> de la entrada.</p><p><b>Semáforo (Moore)</b>: Rojo→Rojo-Amarillo→Verde→Amarillo por temporizador; cada estado fija sus luces.</p><p><b>LED con pulsador</b>: dos estados (LED_Off↔LED_On) que alternan en cada pulsación.</p>",
+     ["Fíjate en el contraste: en el dispensador Mealy la bomba reacciona al instante al soltar el botón; si fuera Moore, solo cambiaría al pasar de estado. Esa 'respuesta inmediata a la entrada' es exactamente cuándo conviene Mealy sobre Moore.","ph"]]
+  ],
+  cards:[["Moore","Salida = f(estado)."],
+   ["Un buen modelo","Abstracto, comprensible, preciso, predictivo, económico."],
+   ["Puerta automática","Ejemplo clásico de Moore (Motor_ON por estado)."],
+   ["Dispensador de bebidas","Mealy: bomba ON solo si el botón sigue pulsado."],
+   ["LED con pulsador","Dos estados que alternan en cada pulsación."],
+   ["Mealy","Salida = f(estado, entrada)."],
+   ["¿Por qué Moore en antirrebote?","La salida depende solo del estado confirmado."],
+   ["¿Qué filtra el debounce?","Los rebotes mecánicos del pulsador (~30 ms)."],
+   ["Tabla → código","Cada fila = un case del switch."],
+   ["enum de estados","Evita números mágicos; más legible."]]
+ },
+ {id:"c4",n:"C4",title:"MEF en C sobre STM32",badge:"MEF en C",widget:"mefcode",
+  tag:"La MEF de antirrebote implementada en C sobre el STM32F407: SysTick a 1 ms, lectura del pin y ButtonFSM_Update().",
+  acc:[
+   ["Estructura del programa","<p>1) reloj → 2) SysTick (1 ms) → 3) GPIO (PA0 entrada) → 4) inicializar la MEF → 5) <span class='mono'>while(1)</span> llamando a <span class='mono'>ButtonFSM_Update()</span>.</p>",
+     ["Se encapsula el estado en una <span class='mono'>struct</span> (<span class='mono'>{currentState, lastChangeTime}</span>) en vez de globales sueltas: así escalas a varios pulsadores creando un arreglo de esa struct y llamando a Update sobre cada uno.","zhu"]],
+   ["SysTick como base de tiempo","<p><span class='mono'>LOAD = (Frec × 0.001) − 1</span> da un tick de 1 ms. El handler incrementa <span class='mono'>volatile uint32_t msTicks</span>; <span class='mono'>GetTick()</span> lo lee.</p>",
+     ["<span class='mono'>msTicks</span> debe ser <span class='mono'>volatile</span>: lo cambia la ISR y lo lee <span class='mono'>main</span>; sin ello el compilador podría cachearlo y nunca 'ver' avanzar el tiempo. Es medición <b>no bloqueante</b>: comparas <span class='mono'>GetTick() − lastChangeTime</span> sin frenar la CPU.","yiu"]],
+   ["La lógica: ButtonFSM_Update()","<p>Un <span class='mono'>switch(currentState)</span> con un <span class='mono'>case</span> por estado. Al cambiar de estado se guarda <span class='mono'>lastChangeTime = GetTick()</span> para arrancar el conteo de 30 ms.</p>",
+     ["Cuidado con el error clásico: usar <span class='mono'>&lt; DEBOUNCE_TIME</span> en vez de <span class='mono'>&gt;=</span> confirmaría el cambio <b>antes</b> de que pasen los 30 ms — justo durante los rebotes — anulando el filtro. La condición correcta es <span class='mono'>(GetTick() − lastChangeTime) &gt;= 30</span>.","zhu"]],
+   ["Preguntas de control","<p>Por qué 30 ms; Moore vs Mealy en antirrebote; cómo escalar a varios pulsadores; por qué actualizar <span class='mono'>lastChangeTime</span> al entrar a un estado de debounce.</p>",
+     ["Actualizar <span class='mono'>lastChangeTime</span> es lo que 'reinicia el cronómetro' en cada transición: sin ese reset, el conteo de 30 ms se mediría desde un instante viejo y el filtro daría tiempos incorrectos.","zhu"]]
+  ],
+  cards:[["Orden del main","reloj → SysTick → GPIO → MEF → while(1)."],
+   ["Tick de 1 ms","LOAD = 16 000 000×0.001 − 1 = 15999."],
+   ["¿msTicks volatile?","Sí: la escribe la ISR, la lee main."],
+   ["Confirmar 30 ms","(GetTick() − lastChangeTime) >= 30."],
+   ["Escalar a N botones","Arreglo de la struct + Update por cada uno."],
+   ["¿Guardar lastChangeTime?","Reinicia el cronómetro en cada transición."]]
+ }
+];
+
+/* ---------- ISA table data (filterable) ---------- */
+const ISA = [
+ ["ADD","ari","Suma","ADD R0, R1, R2","R0 = R1 + R2 (sufijo S actualiza flags)"],
+ ["SUB","ari","Resta","SUB R0, R1, R2","R0 = R1 − R2"],
+ ["MUL","ari","Multiplicación","MUL R0, R1, R2","R0 = R1 × R2 (32 bits bajos)"],
+ ["UDIV","ari","División sin signo","UDIV R0, R1, R2","R0 = R1 / R2 (unsigned)"],
+ ["SDIV","ari","División con signo","SDIV R0, R1, R2","R0 = R1 / R2 (signed)"],
+ ["AND","log","Y lógico / máscara","AND R0, R1, #m","aísla/lee bits (0 apaga, 1 conserva)"],
+ ["ORR","log","O lógico","ORR R0, R1, #m","enciende bits (pone a 1)"],
+ ["EOR","log","XOR / toggle","EOR R0, R1, #m","invierte los bits marcados"],
+ ["BIC","log","Bit clear","BIC R0, R1, #m","limpia (pone a 0) los bits marcados"],
+ ["MVN","log","NOT","MVN R0, R1","R0 = ~R1 (complemento)"],
+ ["LSL","shf","Desplazar izq.","LSL R0, R1, #n","×2ⁿ"],
+ ["LSR","shf","Desplazar der.","LSR R0, R1, #n","÷2ⁿ (sin signo)"],
+ ["ASR","shf","Desplazar arit.","ASR R0, R1, #n","÷2ⁿ (con signo, preserva signo)"],
+ ["ROR","shf","Rotar der.","ROR R0, R1, #n","rotación de bits"],
+ ["LDR","mem","Cargar","LDR R0, [R1]","R0 = memoria[R1]"],
+ ["STR","mem","Almacenar","STR R0, [R1]","memoria[R1] = R0"],
+ ["LDRB","mem","Cargar byte","LDRB R0, [R1]","1 byte (8 bits)"],
+ ["STRH","mem","Almacenar half","STRH R0, [R1]","2 bytes (16 bits)"],
+ ["PUSH","mem","Apilar","PUSH {R4, LR}","guarda registros en la pila"],
+ ["POP","mem","Desapilar","POP {R4, PC}","restaura (POP de PC = retorno)"],
+ ["CMP","cmp","Comparar","CMP R0, R1","R0 − R1, actualiza N,Z,C,V"],
+ ["CMN","cmp","Comparar neg.","CMN R0, R1","R0 + R1, actualiza flags"],
+ ["TST","cmp","Test","TST R0, R1","R0 AND R1, actualiza flags"],
+ ["B","ctl","Salto","B etiqueta","salta (sin guardar retorno)"],
+ ["BL","ctl","Llamar función","BL func","salta y guarda retorno en LR"],
+ ["BX","ctl","Salto a registro","BX LR","salta a la dirección en el registro"],
+ ["BEQ","ctl","Salto si igual","BEQ etiqueta","salta si Z=1"],
+ ["BNE","ctl","Salto si distinto","BNE etiqueta","salta si Z=0"]
+];
+const CATS = {ari:["Aritmética","cat-ari"],log:["Lógica","cat-log"],shf:["Desplazamiento","cat-shf"],mem:["Memoria","cat-mem"],cmp:["Comparación","cat-cmp"],ctl:["Control","cat-ctl"]};
+
+/* ---------- MEF transition table (filterable) ---------- */
+const MEF = [
+ ["ESPERA","esp","Pulsador ON","DEBOUNCE_PRESS"],
+ ["DEBOUNCE_PRESS","dpr","30 ms y pulsador ON","PRESIONADO"],
+ ["DEBOUNCE_PRESS","dpr","30 ms y pulsador OFF","ESPERA"],
+ ["PRESIONADO","prs","30 ms y pulsador OFF","DEBOUNCE_RELEASE"],
+ ["PRESIONADO","prs","30 ms y pulsador ON","PRESIONADO"],
+ ["DEBOUNCE_RELEASE","drl","30 ms y pulsador OFF","ESPERA"],
+ ["DEBOUNCE_RELEASE","drl","30 ms y pulsador ON","PRESIONADO"]
+];
+const MCATS = {esp:["Espera","cat-ctl"],dpr:["Debounce press","cat-cmp"],prs:["Presionado","cat-log"],drl:["Debounce release","cat-shf"]};
+
+/* ---------- BIBLIO cross-ref (filterable) ---------- */
+const XREF = [
+ ["s1","Cómo se construye un CPU desde cero (arquitectura Hack)","n2t","Nand2Tetris — cap. 4-5"],
+ ["s1","Jerarquía de memoria, ciclos y rendimiento","ph","Patterson & Hennessy — cap. 1, 5"],
+ ["s2","RISC vs CISC, pipelining a fondo","ph","Patterson & Hennessy — cap. 4"],
+ ["s2","Filosofía RISC en ARM Cortex-M","zhu","Yifeng Zhu — cap. 1-2"],
+ ["s3","Núcleo Cortex-M4: NVIC, bit-banding, CMSIS","yiu","Joseph Yiu — cap. 4, 7, 8"],
+ ["s3","Mapa de memoria del STM32F407","rm","RM0090 — Memory map"],
+ ["s4","Registros, AAPCS, barrel shifter, IT blocks","yiu","Joseph Yiu — cap. 5-6"],
+ ["s4","Set de instrucciones Thumb-2 (referencia)","pm","PM0214 — Instruction set"],
+ ["s5","Trucos de bits, shift+add, saturación","hd","Hacker's Delight — cap. 2-3"],
+ ["s5","Aritmética, lógica y DSP en ensamblador","zhu","Yifeng Zhu — cap. 5, 14"],
+ ["s6","Registros GPIO/RCC (MODER, OTYPER, BSRR)","rm","RM0090 — GPIO, RCC"],
+ ["s6","GPIO paso a paso en ensamblador","zhu","Yifeng Zhu — cap. 6-7"],
+ ["st","SysTick, interrupciones y RTOS","yiu","Joseph Yiu — cap. 9-10"],
+ ["st","SysTick y temporizadores (registros)","pm","PM0214 — SysTick"],
+ ["c1","C bare-metal, toolchain y arranque","zhu","Yifeng Zhu — C bare-metal"],
+ ["c1","Compilar, ensamblar y enlazar","ph","Patterson & Hennessy — Apéndice A"],
+ ["c2","Registros con punteros, volatile y CMSIS","yiu","Joseph Yiu — cap. 7-8"],
+ ["c2","Registros GPIO/RCC exactos","rm","RM0090 — GPIO, RCC"],
+ ["c3","Lógica secuencial y máquinas de estado","ph","Patterson & Hennessy — Apéndice A (MEF)"],
+ ["c3","Antirrebote de pulsador en C","zhu","Yifeng Zhu — GPIO y switches"],
+ ["c4","MEF en C con SysTick","zhu","Yifeng Zhu — timers y MEF"],
+ ["c4","SysTick, interrupciones y volatile","yiu","Joseph Yiu — cap. 9"]
+];
+const XLABEL = {s1:"S1",s2:"S2",s3:"S3",s4:"S4",s5:"S5",s6:"S6",st:"SysTick",c1:"C1",c2:"C2",c3:"C3",c4:"C4"};
+
+/* ---------- EXER: ejercicios de las guías ---------- */
+const EXER = [
+ ["c1","Lenguajes de embebidos vs C","Investiga otros lenguajes usados en embebidos: listado, ventajas/desventajas frente a C y si existe un ranking (con link)."],
+ ["c1","Tres macros para registros","Crea MODIFY_REG_FIELD(REG,MASK,VAL) → PE15 como salida (GPIOE->MODER); CHECK_PERIPH_CLK → reloj del Puerto E (bit 4 de RCC->AHB1ENR); TOGGLE_BIT → conmutar PE15 (GPIOE->ODR)."],
+ ["c1","Errores de tipos y sintaxis","Encuentra y corrige: int=10.5, float=3/2, float=%d, char letra=\"A\", char nombre[5] para \"Henry\". Pruébalo en un compilador online."],
+ ["c1","Errores de bucles","Detecta y arregla: for con i-- (infinito), array[5] con i<=5 (fuera de rango), while(num!=0) con num++ (infinito) y while(contador<5) sin incremento."],
+ ["c3","LED conmutado por pulsador","Combina la MEF de antirrebote con la MEF de LED: dibuja el diagrama que usa el pulsador ya filtrado para alternar el LED."],
+ ["c3","Control de un tanque de agua","Sensores A,B,C (VACÍO/NORMAL/LLENO/ALARMA) y válvulas E,S. Construye la tabla de transiciones y el diagrama de estados."],
+ ["c3","Iluminación inteligente","Presencia + sensor de luz + interruptor manual + apagado a los 30 s. Diagrama, decide Moore o Mealy y plantea la implementación."],
+ ["c3","Motor con variador de velocidad","Estados Apagado/Baja/Media/Alta + botón de emergencia. Diagrama, tabla de estados y cómo se implementaría en C/Assembly."],
+ ["c3","Cerradura con código numérico","Teclado 4×4, código de 4 dígitos, 3 intentos y bloqueo temporal. Estados: espera, ingreso, verificación, acción. Diagrama y tabla."],
+ ["c3","Riego inteligente","Humedad baja activa el riego (5 min o hasta nivel ok); lluvia lo detiene; modo manual. Diagrama, tabla y elección Moore/Mealy."],
+ ["c4","Diagrama para otro periférico","Dibuja tu propio diagrama de estados (p. ej. un LED con encendido/apagado) describiendo estados y transiciones."],
+ ["c4","Completar la inicialización GPIO","Agrega las llamadas de configuración que faltan para inicializar los GPIO del ejemplo."],
+ ["c4","ButtonFSM_IsPressed()","Escribe una función que devuelva true si la MEF está en el estado PRESIONADO."],
+ ["c4","Corrección del debounce","Cambia la condición a (currentTime - lastChangeTime) < DEBOUNCE_TIME y explica por qué el filtro dejaría de funcionar."],
+ ["c4","Preguntas de control","Por qué 30 ms; Moore vs Mealy en antirrebote; cómo escalar a varios pulsadores; por qué actualizar lastChangeTime al entrar a un estado de debounce."]
+];
+
+/* ============================ RENDER ============================ */
+const tabs=document.getElementById("tabs"), main=document.getElementById("main");
+
+UNITS.forEach((u,i)=>{
+  const t=document.createElement("button");
+  t.className="tab";t.setAttribute("role","tab");t.setAttribute("aria-selected",i===0);t.dataset.t=u.id;
+  t.innerHTML=`<span class="n">${u.n}</span>${u.title}`;tabs.appendChild(t);
+
+  const s=document.createElement("section");s.className="unit"+(i===0?" on":"");s.id=u.id;s.setAttribute("role","tabpanel");
+  let h=`<div class="uhead"><span class="ubadge">${u.badge?u.badge:(u.n==="⏳"?"SysTick":"Sesión "+u.n.slice(1))}</span><h2>${u.title}</h2></div><p class="utag">${u.tag}</p>`;
+
+  if(u.widget && u.widget!=="none") h+=widgetHTML(u.widget);
+
+  h+=`<div class="lab"><span class="i">📖</span><h3>Teoría (ampliada)</h3><span class="hint">toca para abrir · ★ = más allá de las diapositivas</span></div><div class="acc">`;
+  u.acc.forEach(c=>{
+    let amp="";
+    if(c[2]) amp=`<div class="amp"><b>★ Más allá:</b> ${c[2][0]}<br><span class="cite">📚 ${B[c[2][1]]}</span></div>`;
+    h+=`<details class="c"><summary><span class="dot"></span>${c[0]}<span class="chev">›</span></summary><div class="body">${c[1]}${amp}</div></details>`;
+  });
+  h+=`</div>`;
+
+  if(u.table==="isa") h+=isaTableHTML();
+  if(u.table==="mef") h+=mefTableHTML();
+
+  h+=`<div class="lab"><span class="i">🔁</span><h3>Tarjetas</h3><span class="hint">toca para girar</span></div><div class="cards">`;
+  u.cards.forEach(c=>{h+=`<div class="flip" tabindex="0" role="button" aria-label="${c[0]}"><div class="fi">
+    <div class="face fr"><span class="k">Concepto</span><div class="q">${c[0]}</div><div class="t">↻ girar</div></div>
+    <div class="face bk"><span class="k">Respuesta</span><div class="a">${c[1]}</div><div class="t">↻ volver</div></div></div></div>`;});
+  h+=`</div>`;
+
+  s.innerHTML=h;main.appendChild(s);
+});
+
+/* Bibliografía tab */
+(()=>{
+  const t=document.createElement("button");t.className="tab";t.setAttribute("role","tab");t.setAttribute("aria-selected","false");t.dataset.t="biblio";
+  t.innerHTML=`<span class="n">📚</span>Bibliografía`;tabs.appendChild(t);
+  const s=document.createElement("section");s.className="unit";s.id="biblio";s.setAttribute("role","tabpanel");
+  s.innerHTML=`
+   <div class="uhead"><span class="ubadge">📚</span><h2>Bibliografía cruzada</h2></div>
+   <p class="utag">Libros verificados (título, autor, edición e ISBN) y una tabla filtrable de qué leer para cada sesión.</p>
+   <div class="lab"><span class="i">📗</span><h3>Libros recomendados</h3></div>
+   <div class="book k2"><div class="bt">Embedded Systems with ARM Cortex-M — in Assembly Language and C<span class="pill core">el más cercano a tu curso</span></div>
+     <div class="ba">Yifeng Zhu · 4ª edición (2023) · E-Man Press</div>
+     <div class="bw">Prácticamente tu temario: Assembly + C a nivel de registro, GPIO, SysTick, DSP/SIMD y codificación de instrucciones.</div>
+     <div class="bm">ISBN 978-0-9826926-7-7</div></div>
+   <div class="book"><div class="bt">The Definitive Guide to ARM Cortex-M3 and Cortex-M4 Processors<span class="pill">la referencia</span></div>
+     <div class="ba">Joseph Yiu · 3ª edición (2013) · Newnes</div>
+     <div class="bw">Escrito por un ingeniero de ARM. Núcleo, NVIC, excepciones, FPU, MPU, bit-banding, CMSIS. Para dominarlo todo.</div>
+     <div class="bm">ISBN 978-0-12-408082-9</div></div>
+   <div class="book k3"><div class="bt">Computer Organization and Design — ARM Edition<span class="pill">fundamentos</span></div>
+     <div class="ba">Patterson &amp; Hennessy · (2016) · Morgan Kaufmann</div>
+     <div class="bw">El clásico de arquitectura (autores del Turing). Pipelining, aritmética, jerarquía de memoria, rendimiento.</div>
+     <div class="bm">ISBN 978-0-12-801733-3</div></div>
+   <div class="book k4"><div class="bt">The Elements of Computing Systems — Nand2Tetris<span class="pill">tu Sesión 1</span></div>
+     <div class="ba">Nisan &amp; Schocken · 2ª edición (2021) · MIT Press</div>
+     <div class="bw">Construyes un computador desde una NAND hasta un SO. La arquitectura Hack es justo el simulador de tu clase.</div>
+     <div class="bm">ISBN 978-0-262-53980-7 · material gratis en nand2tetris.org</div></div>
+   <div class="book k5"><div class="bt">Hacker's Delight<span class="pill">trucos de bits</span></div>
+     <div class="ba">Henry S. Warren Jr. · 2ª edición (2012) · Addison-Wesley</div>
+     <div class="bw">El libro de culto de la manipulación de bits: máscaras, shifts, multiplicar/dividir sin MUL/DIV. Potencia la Sesión 5.</div>
+     <div class="bm">ISBN 978-0-321-84268-8</div></div>
+
+   <div class="lab"><span class="i">🆓</span><h3>Manuales oficiales (gratis)</h3></div>
+   <div class="book" style="--x:0"><div class="bt">STM32F407 Reference Manual (RM0090)<span class="pill free">gratis · ST.com</span></div>
+     <div class="bw">Los registros exactos de tu Sesión 6 (RCC, GPIO: MODER, OTYPER, BSRR…).</div></div>
+   <div class="book" ><div class="bt">STM32 Cortex-M4 Programming Manual (PM0214)<span class="pill free">gratis · ST.com</span></div>
+     <div class="bw">Instrucciones de ensamblador, registros del core y SysTick.</div></div>
+   <div class="book"><div class="bt">ARMv7-M Architecture Reference Manual &nbsp;/&nbsp; Cortex-M4 Devices Generic User Guide<span class="pill free">gratis · developer.arm.com</span></div>
+     <div class="bw">La ISA oficial (Thumb-2) y la guía del núcleo (NVIC, SysTick, MPU, mapa de memoria).</div></div>
+
+   <div class="lab"><span class="i">🔎</span><h3>¿Qué leer para cada sesión?</h3><span class="hint">filtra por unidad o busca un tema</span></div>
+   ${xrefTableHTML()}`;
+  main.appendChild(s);
+})();
+
+/* Ejercicios tab */
+(()=>{
+  const t=document.createElement("button");t.className="tab";t.setAttribute("role","tab");t.setAttribute("aria-selected","false");t.dataset.t="exer";
+  t.innerHTML=`<span class="n">✍️</span>Ejercicios`;tabs.appendChild(t);
+  const s=document.createElement("section");s.className="unit";s.id="exer";s.setAttribute("role","tabpanel");
+  const units=[...new Set(EXER.map(r=>r[0]))];
+  const rows=EXER.map(r=>`<tr data-cat="${r[0]}" data-txt="${(r[1]+' '+r[2]).toLowerCase()}">
+    <td><span class="catpill cat-cmp">${XLABEL[r[0]]}</span></td>
+    <td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+  const chips=`<button class="chip s" data-f="all">Todos</button>`+units.map(k=>`<button class="chip" data-f="${k}">${XLABEL[k]}</button>`).join("");
+  s.innerHTML=`
+   <div class="uhead"><span class="ubadge">✍️</span><h2>Ejercicios de las guías</h2></div>
+   <p class="utag">Los retos propuestos en las actividades de C, drivers y MEF, reunidos para repaso. Filtra por unidad o busca un tema.</p>
+   <div class="filt" data-tbl="exer"><input type="search" placeholder="Buscar ejercicio… (ej. macro, tanque, debounce, motor)" aria-label="Buscar"> ${chips}</div>
+   <div class="tbl-wrap"><table><thead><tr><th>Unidad</th><th>Ejercicio</th><th>Qué entregar</th></tr></thead>
+   <tbody id="exer-body">${rows}</tbody></table><div class="nomatch" id="exer-none">Sin resultados.</div></div>`;
+  main.appendChild(s);
+})();
+
+/* ---------- table builders ---------- */
+function isaTableHTML(){
+  let rows=ISA.map(r=>`<tr data-cat="${r[1]}" data-txt="${(r[0]+' '+r[2]+' '+r[4]).toLowerCase()}">
+    <td><span class="mono">${r[0]}</span></td>
+    <td><span class="catpill ${CATS[r[1]][1]}">${CATS[r[1]][0]}</span></td>
+    <td>${r[2]}</td><td><span class="mono">${r[3]}</span></td><td>${r[4]}</td></tr>`).join("");
+  let chips=`<button class="chip s" data-f="all">Todas</button>`+Object.keys(CATS).map(k=>`<button class="chip" data-f="${k}">${CATS[k][0]}</button>`).join("");
+  return `<div class="lab"><span class="i">🗂️</span><h3>Referencia de instrucciones ARM</h3><span class="hint">tabla filtrable</span></div>
+   <div class="filt" data-tbl="isa"><input type="search" placeholder="Buscar instrucción o efecto… (ej. multiplicar, LDR, flags)" aria-label="Buscar"> ${chips}</div>
+   <div class="tbl-wrap"><table><thead><tr><th>Instr.</th><th>Categoría</th><th>Nombre</th><th>Ejemplo</th><th>Efecto</th></tr></thead>
+   <tbody id="isa-body">${rows}</tbody></table><div class="nomatch" id="isa-none">Sin resultados.</div></div>`;
+}
+function xrefTableHTML(){
+  let rows=XREF.map(r=>`<tr data-cat="${r[0]}" data-txt="${(r[1]+' '+B[r[2]]+' '+r[3]).toLowerCase()}">
+    <td><span class="catpill cat-ari">${XLABEL[r[0]]}</span></td>
+    <td>${r[1]}</td><td>${B[r[2]].split(" — ")[0]}</td><td><span class="mono">${r[3]}</span></td></tr>`).join("");
+  let chips=`<button class="chip s" data-f="all">Todas</button>`+Object.keys(XLABEL).map(k=>`<button class="chip" data-f="${k}">${XLABEL[k]}</button>`).join("");
+  return `<div class="filt" data-tbl="xref"><input type="search" placeholder="Buscar tema… (ej. bit-banding, GPIO, pipeline)" aria-label="Buscar"> ${chips}</div>
+   <div class="tbl-wrap"><table><thead><tr><th>Sesión</th><th>Tema</th><th>Fuente</th><th>Dónde</th></tr></thead>
+   <tbody id="xref-body">${rows}</tbody></table><div class="nomatch" id="xref-none">Sin resultados.</div></div>`;
+}
+
+function mefTableHTML(){
+  let rows=MEF.map(r=>`<tr data-cat="${r[1]}" data-txt="${(r[0]+' '+r[2]+' '+r[3]).toLowerCase()}">
+    <td><span class="catpill ${MCATS[r[1]][1]}">${r[0]}</span></td>
+    <td>${r[2]}</td><td><span class="mono">${r[3]}</span></td></tr>`).join("");
+  let chips=`<button class="chip s" data-f="all">Todas</button>`+Object.keys(MCATS).map(k=>`<button class="chip" data-f="${k}">${MCATS[k][0]}</button>`).join("");
+  return `<div class="lab"><span class="i">🗂️</span><h3>Tabla de transiciones (antirrebote)</h3><span class="hint">filtra por estado actual</span></div>
+   <div class="filt" data-tbl="mef"><input type="search" placeholder="Buscar estado o condición… (ej. 30 ms, PRESIONADO)" aria-label="Buscar"> ${chips}</div>
+   <div class="tbl-wrap"><table><thead><tr><th>Estado actual</th><th>Evento / condición</th><th>Estado siguiente</th></tr></thead>
+   <tbody id="mef-body">${rows}</tbody></table><div class="nomatch" id="mef-none">Sin resultados.</div></div>`;
+}
+
+/* ---------- widgets HTML (same as before, trimmed) ---------- */
+function widgetHTML(k){
+  if(k==="fde")return `<div class="w" id="w-fde"><h4>El ciclo de la CPU, paso a paso</h4><p class="ws">Avanza el ciclo con la instrucción <span class="mono">0x4000</span> en la dirección 0.</p>
+   <div class="fde"><div class="stg" data-s="0"><div class="sn">01 · Fetch</div><div class="st">Buscar</div><div class="sd">El PC indica la dirección; la ROM entrega la instrucción.</div></div>
+   <div class="stg" data-s="1"><div class="sn">02 · Decode</div><div class="st">Decodificar</div><div class="sd">La CPU interpreta los bits (¿tipo A o C?).</div></div>
+   <div class="stg" data-s="2"><div class="sn">03 · Execute</div><div class="st">Ejecutar</div><div class="sd">Realiza la operación y el PC avanza.</div></div></div>
+   <div class="ro" id="fde-o">Pulsa <b>&nbsp;Avanzar&nbsp;</b> para empezar.</div>
+   <div class="ctl" style="margin-top:12px"><button class="btn" id="fde-n">Avanzar ▸</button><button class="btn g" id="fde-r">Reiniciar</button></div></div>`;
+  if(k==="reg")return `<div class="w" id="w-reg"><h4>Explorador de registros ARM</h4><p class="ws">Toca un registro o una bandera para ver su rol.</p>
+   <div class="rmap" id="rmap"></div><div class="rdet" id="rdet"><div class="rdn">Selecciona un registro</div><div class="rdr">R0–R15: los 16 registros de 32 bits del Cortex-M4.</div></div>
+   <div class="flags" id="flags"></div><div class="rdet" id="fdet" style="margin-top:10px"><div class="rdn">Flags N · Z · C · V</div><div class="rdr">Se actualizan con CMP y con el sufijo S.</div></div></div>`;
+  if(k==="bitlab")return `<div class="w" id="w-bit"><h4>Laboratorio de bits</h4><p class="ws">Toca los bits del valor y la máscara, elige una operación y observa el resultado.</p>
+   <div class="brow"><span class="rl">valor</span><div class="byte" id="b-v"></div></div><div class="brow"><span class="rl">máscara</span><div class="byte" id="b-m"></div></div>
+   <div class="ops" id="b-ops"><button class="op s" data-op="AND">AND</button><button class="op" data-op="ORR">ORR</button><button class="op" data-op="EOR">EOR</button><button class="op" data-op="BIC">BIC</button></div>
+   <div class="brow"><span class="rl">resultado</span><div class="byte" id="b-r"></div></div><div class="expr" id="b-x"></div></div>`;
+  if(k==="gpio")return `<div class="w" id="w-gpio"><h4>Encender el LED, paso a paso</h4><p class="ws">Recorre los 5 pasos; al completar los 3 primeros el LED puede encender.</p>
+   <div class="steps" id="g-steps"></div><div class="sbody" id="g-body"></div><div class="led" id="g-led" style="margin-top:12px"><span class="b"></span><span>LED en PA6</span></div></div>`;
+  if(k==="systick")return `<div class="w" id="w-st"><h4>Calculadora de recarga (LOAD)</h4><p class="ws">Elige frecuencia y retardo; se calcula el valor de recarga del SysTick.</p>
+   <div class="calc"><div class="fld"><label>Frecuencia</label><select id="st-f"><option value="16000000">16 MHz</option><option value="8000000">8 MHz</option><option value="48000000">48 MHz</option><option value="84000000">84 MHz</option><option value="168000000">168 MHz</option></select></div>
+   <div class="fld"><label>Retardo</label><select id="st-d"><option value="0.001">1 ms</option><option value="0.01">10 ms</option><option value="0.1">100 ms</option><option value="1">1 s</option><option value="0.0005">0.5 ms</option></select></div>
+   <div class="cout" id="st-o"></div></div></div>`;
+  if(k==="pipeline")return `<div class="w" id="w-pipe"><h4>El pipeline de compilación en C</h4><p class="ws">Avanza las 4 etapas que convierten tu <span class="mono">.c</span> en un ejecutable.</p>
+   <div class="pipe">
+    <div class="stg"><div class="sn">01 · cpp</div><div class="st">.c → .i</div><div class="sd">Preprocesa: quita comentarios, expande macros e incluye headers.</div></div>
+    <div class="stg"><div class="sn">02 · cc1</div><div class="st">.i → .s</div><div class="sd">Compila el C a ensamblador del procesador destino.</div></div>
+    <div class="stg"><div class="sn">03 · as</div><div class="st">.s → .o</div><div class="sd">Ensambla a código máquina binario relocalizable.</div></div>
+    <div class="stg"><div class="sn">04 · ld</div><div class="st">.o → exe</div><div class="sd">Enlaza símbolos y runtime; el linker script ubica las secciones.</div></div></div>
+   <div class="ro" id="pipe-o">Pulsa <b>&nbsp;Avanzar&nbsp;</b> para empezar.</div>
+   <div class="ctl" style="margin-top:12px"><button class="btn" id="pipe-n">Avanzar ▸</button><button class="btn g" id="pipe-r">Reiniciar</button></div></div>`;
+  if(k==="driver")return `<div class="w" id="w-drv"><h4>Dos formas de escribir el mismo driver</h4><p class="ws">Configurar PA6 como salida. Cambia el estilo y compara el código.</p>
+   <div class="ops" id="drv-seg"><button class="op s" data-v="def">Estilo #define</button><button class="op" data-v="cmsis">Estilo CMSIS (struct →)</button></div>
+   <pre class="code" id="drv-code"></pre>
+   <div class="ro" id="drv-note" style="margin-top:10px"></div></div>`;
+  if(k==="mef")return `<div class="w" id="w-mef"><h4>Simulador de antirrebote (Moore)</h4><p class="ws">Cambia el pulsador y avanza un ciclo de 30 ms; observa la transición y la salida.</p>
+   <div class="mef-nodes" id="mef-nodes"></div>
+   <div class="ctl" style="margin-top:12px"><button class="btn g" id="mef-btn">Pulsador: <b id="mef-bl">OFF</b></button><button class="btn" id="mef-step">⏱ +30 ms ▸</button><button class="btn g" id="mef-r">Reiniciar</button></div>
+   <div class="mef-out"><span class="led" id="mef-led"><span class="b"></span><span>Salida (LED): <b id="mef-ol">OFF</b></span></span></div>
+   <div class="ro" id="mef-o" style="margin-top:12px">Estado inicial: <b>ESPERA</b>. Pon el pulsador en ON y avanza.</div></div>`;
+  if(k==="mefcode")return `<div class="w" id="w-mc"><h4>La MEF de antirrebote en C, por partes</h4><p class="ws">El código bare-metal del STM32F407 (16 MHz, pulsador en PA0). Elige una parte.</p>
+   <div class="ops" id="mc-seg" style="margin-bottom:2px">
+     <button class="op s" data-v="tick">SysTick 1 ms</button><button class="op" data-v="read">Leer pulsador</button><button class="op" data-v="fsm">enum + struct</button><button class="op" data-v="upd">ButtonFSM_Update()</button><button class="op" data-v="main">main()</button></div>
+   <pre class="code" id="mc-code"></pre>
+   <div class="ro" id="mc-note" style="margin-top:10px"></div></div>`;
+  return "";
+}
+
+/* ============================ INTERACTION ============================ */
+tabs.addEventListener("click",e=>{const t=e.target.closest(".tab");if(!t)return;
+  tabs.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected","false"));t.setAttribute("aria-selected","true");
+  main.querySelectorAll(".unit").forEach(s=>s.classList.remove("on"));document.getElementById(t.dataset.t).classList.add("on");
+  window.scrollTo({top:0,behavior:"smooth"});});
+main.addEventListener("click",e=>{const f=e.target.closest(".flip");if(f)f.classList.toggle("f");});
+main.addEventListener("keydown",e=>{const f=e.target.closest(".flip");if(f&&(e.key==="Enter"||e.key===" ")){e.preventDefault();f.classList.toggle("f");}});
+
+/* filterable tables (generic) */
+function wireTable(kind){
+  const filt=document.querySelector(`.filt[data-tbl="${kind}"]`);if(!filt)return;
+  const body=document.getElementById(kind+"-body"), none=document.getElementById(kind+"-none");
+  const search=filt.querySelector("input"); let cat="all";
+  function apply(){
+    const q=search.value.trim().toLowerCase();let vis=0;
+    body.querySelectorAll("tr").forEach(tr=>{
+      const okC = cat==="all"||tr.dataset.cat===cat;
+      const okQ = !q||tr.dataset.txt.includes(q)||tr.textContent.toLowerCase().includes(q);
+      const show=okC&&okQ;tr.style.display=show?"":"none";if(show)vis++;
+    });
+    none.style.display=vis?"none":"block";
+  }
+  filt.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+    filt.querySelectorAll(".chip").forEach(x=>x.classList.remove("s"));c.classList.add("s");cat=c.dataset.f;apply();}));
+  search.addEventListener("input",apply);
+}
+wireTable("isa");wireTable("xref");wireTable("mef");wireTable("exer");
+
+/* fde */
+(()=>{const w=document.getElementById("w-fde");if(!w)return;
+  const ro=["<b>FETCH</b> — El PC apunta a la dirección 0; la ROM entrega la instrucción <b>0x4000</b>.",
+   "<b>DECODE</b> — 0x4000 = 0100 0000 0000 0000. Bit 15 = 0 → instrucción <b>tipo A</b> (@16384).",
+   "<b>EXECUTE</b> — Se carga 16384 en A y el <b>PC avanza</b> a la dirección 1. El ciclo se repite."];
+  let st=-1;const out=document.getElementById("fde-o"),stg=[...w.querySelectorAll(".stg")];
+  const paint=()=>{stg.forEach((s,i)=>{s.classList.toggle("a",i===st);s.classList.toggle("d",i<st)});if(st>=0)out.innerHTML=ro[st];};
+  document.getElementById("fde-n").onclick=()=>{st=(st+1)%3;paint();};
+  document.getElementById("fde-r").onclick=()=>{st=-1;stg.forEach(s=>s.classList.remove("a","d"));out.innerHTML="Pulsa <b>&nbsp;Avanzar&nbsp;</b> para empezar.";};
+})();
+
+/* register explorer */
+(()=>{const w=document.getElementById("w-reg");if(!w)return;
+  const regs=[["R0","1er arg/ret","arg","Primer argumento y valor de retorno. Volátil."],["R1","argumento","arg","2º argumento. Volátil."],["R2","argumento","arg","3er argumento. Volátil."],["R3","argumento","arg","4º argumento. Volátil."],
+   ["R4","preservado","pre","Callee-saved: guárdalo con PUSH/POP si lo usas."],["R5","preservado","pre","Callee-saved."],["R6","preservado","pre","Callee-saved."],["R7","preservado","pre","Callee-saved."],
+   ["R8","preservado","pre","Callee-saved."],["R9","preservado","pre","Callee-saved."],["R10","preservado","pre","Callee-saved."],["R11","preservado","pre","Callee-saved."],
+   ["R12","IP·scratch","arg","Scratch intra-procedimiento. Volátil."],["R13","SP","spec","Stack Pointer: tope de la pila (MSP/PSP). Decrece en PUSH."],["R14","LR","spec","Link Register: dirección de retorno. BX LR."],["R15","PC","spec","Program Counter: instrucción+4. Cambia con B/BL/BX."]];
+  const map=document.getElementById("rmap"),det=document.getElementById("rdet");
+  regs.forEach(r=>{const d=document.createElement("div");d.className="reg";d.dataset.c=r[2];d.innerHTML=`<div class="rn">${r[0]}</div><div class="rl">${r[1]}</div>`;
+    d.onclick=()=>{map.querySelectorAll(".reg").forEach(x=>x.classList.remove("s"));d.classList.add("s");det.innerHTML=`<div class="rdn">${r[0]} · ${r[1]}</div><div class="rdr">${r[3]}</div>`;};map.appendChild(d);});
+  const flags=[["N","Negative","1 si el resultado es negativo (bit 31)."],["Z","Zero","1 si el resultado es cero."],["C","Carry","Acarreo en aritmética SIN signo."],["V","oVerflow","Desbordamiento en aritmética CON signo."]];
+  const fw=document.getElementById("flags"),fd=document.getElementById("fdet");
+  flags.forEach(f=>{const e=document.createElement("div");e.className="flg";e.innerHTML=`<div class="fn">${f[0]}</div><div class="fl">${f[1]}</div>`;
+    e.onclick=()=>fd.innerHTML=`<div class="rdn">${f[0]} — ${f[1]}</div><div class="rdr">${f[2]}</div>`;fw.appendChild(e);});
+})();
+
+/* bit playground */
+(()=>{const w=document.getElementById("w-bit");if(!w)return;
+  const val=[1,0,1,1,0,0,1,0],msk=[0,0,0,0,1,1,1,1];let op="AND";
+  const eV=document.getElementById("b-v"),eM=document.getElementById("b-m"),eR=document.getElementById("b-r"),eX=document.getElementById("b-x");
+  const build=(arr,host,edit,res)=>{host.innerHTML="";arr.forEach((b,i)=>{const c=document.createElement("div");c.className="cell"+(b?" one":"")+(res?" res":"");c.textContent=b;
+    if(edit){c.tabIndex=0;c.setAttribute("role","button");const t=()=>{arr[i]^=1;c.classList.toggle("one");c.textContent=arr[i];calc();};c.onclick=t;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t();}};}host.appendChild(c);});};
+  const calc=()=>{const res=val.map((v,i)=>{const m=msk[i];return op==="AND"?v&m:op==="ORR"?v|m:op==="EOR"?v^m:v&(m?0:1);});build(res,eR,false,true);
+    const h=a=>parseInt(a.join(""),2).toString(16).toUpperCase().padStart(2,"0");const s={AND:"&",ORR:"|",EOR:"^",BIC:"&~"}[op];
+    eX.innerHTML=`0x${h(val)} <span class="h">${s}</span> 0x${h(msk)} = <span class="o">0x${h(res)}</span>`;};
+  build(val,eV,true,false);build(msk,eM,true,false);
+  w.querySelectorAll(".op").forEach(b=>b.onclick=()=>{w.querySelectorAll(".op").forEach(x=>x.classList.remove("s"));b.classList.add("s");op=b.dataset.op;calc();});calc();
+})();
+
+/* gpio stepper */
+(()=>{const w=document.getElementById("w-gpio");if(!w)return;
+  const steps=[["Clock","RCC_AHB1ENR","Habilitar el reloj de GPIOA","Sin el clock ningún registro del puerto responde.","ORR R1, R1, #0x01"],
+   ["MODER","0x00","Pin 6 como salida","2 bits/pin: se limpia MODER6 y se pone 01.","BIC R1,R1,#(0b11<<12)\nORR R1,R1,#(0b01<<12)"],
+   ["OTYPER","0x04","Modo push-pull","1 bit/pin: 0 = push-pull (necesario para el LED).","BIC R1, R1, R2   @ pin6=0"],
+   ["OSPEEDR","0x08","Velocidad (slew rate)","No es frecuencia: qué tan rápido cambia el voltaje.","ORR R1, R1, R2"],
+   ["PUPDR","0x0C","Sin pull","00 = sin resistencia. Salida normal no la necesita.","@ dejar en 00"]];
+  const sc=document.getElementById("g-steps"),body=document.getElementById("g-body"),led=document.getElementById("g-led");const done=new Set();
+  const paint=i=>{sc.querySelectorAll(".sd").forEach((d,j)=>d.classList.toggle("a",j===i));const s=steps[i];
+    body.innerHTML=`<h5>Paso ${i+1} · ${s[0]} <span class="mono" style="color:var(--muted);font-size:12px">(offset ${s[1]})</span></h5><p>${s[3]}</p><pre class="code">${s[4].replace(/@/g,'<span class="c">@</span>')}</pre>`;
+    done.add(i);if(done.has(0)&&done.has(1)&&done.has(2))led.classList.add("on");};
+  steps.forEach((s,i)=>{const d=document.createElement("div");d.className="sd";d.tabIndex=0;d.setAttribute("role","button");d.innerHTML=`<div class="n">PASO ${i+1}</div><div class="tt">${s[0]}</div>`;
+    const go=()=>paint(i);d.onclick=go;d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}};sc.appendChild(d);});paint(0);
+})();
+
+/* systick calc */
+(()=>{const w=document.getElementById("w-st");if(!w)return;
+  const f=document.getElementById("st-f"),d=document.getElementById("st-d"),o=document.getElementById("st-o");
+  const fmt=n=>n.toLocaleString("en-US");
+  const calc=()=>{const load=Math.round(parseFloat(f.value)*parseFloat(d.value))-1;const ok=load<=0xFFFFFF;
+    o.innerHTML=`LOAD = <span class="big">${fmt(load)}</span> ${ok?"":"<span style='color:#ff9db6'>⚠ excede 24 bits (máx 16 777 215)</span>"}<div class="f">= (${fmt(parseFloat(f.value))} Hz × ${d.options[d.selectedIndex].text}) − 1</div>`;};
+  f.onchange=calc;d.onchange=calc;calc();
+})();
+
+/* pipeline stepper */
+(()=>{const w=document.getElementById("w-pipe");if(!w)return;
+  const ro=["<b>01 · Preprocesado</b> (cpp) — <span class='mono'>.c → .i</span>: se quitan comentarios y las macros se expanden (ej. <span class='mono'>LIMITE</span> → <span class='mono'>10</span>).",
+   "<b>02 · Compilación</b> (cc1) — <span class='mono'>.i → .s</span>: el C se traduce a instrucciones de ensamblador del procesador destino.",
+   "<b>03 · Ensamblado</b> (as) — <span class='mono'>.s → .o</span>: los mnemónicos pasan a código máquina binario (opcodes en hex).",
+   "<b>04 · Enlazado</b> (ld) — <span class='mono'>.o → ejecutable</span>: se resuelven símbolos y se agrega el runtime; en bare-metal el <span class='mono'>.ld</span> ubica <span class='mono'>.text/.data/.bss</span>."];
+  let st=-1;const out=document.getElementById("pipe-o"),stg=[...w.querySelectorAll(".stg")];
+  const paint=()=>{stg.forEach((s,i)=>{s.classList.toggle("a",i===st);s.classList.toggle("d",i<st)});if(st>=0)out.innerHTML=ro[st];};
+  document.getElementById("pipe-n").onclick=()=>{st=(st+1)%4;paint();};
+  document.getElementById("pipe-r").onclick=()=>{st=-1;stg.forEach(s=>s.classList.remove("a","d"));out.innerHTML="Pulsa <b>&nbsp;Avanzar&nbsp;</b> para empezar.";};
+})();
+
+/* driver toggle (#define vs CMSIS) */
+(()=>{const w=document.getElementById("w-drv");if(!w)return;
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const code={
+   def:`RCC_AHB1ENR |= (1 << 0);            // reloj GPIOA
+GPIOA_MODER  &= ~(0b11 << (6*2));    // limpiar bits 12-13
+GPIOA_MODER  |=  (0b01 << (6*2));    // PA6 = salida
+GPIOA_OTYPER &= ~(1 << 6);           // push-pull`,
+   cmsis:`RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;          // reloj GPIOA
+GPIOA->MODER  &= ~GPIO_MODER_MODER6;           // limpiar
+GPIOA->MODER  |=  (1U << GPIO_MODER_MODER6_Pos); // PA6 = salida
+GPIOA->OTYPER &= ~GPIO_OTYPER_OT6;             // push-pull`};
+  const note={def:"Cada registro es un <b>puntero volátil crudo</b> definido con #define. Tú calculas base + offset.",
+   cmsis:"Una <b>struct</b> mapea todos los registros y las máscaras vienen con nombre. Es lo que trae <span class='mono'>stm32f4xx.h</span>."};
+  const cd=document.getElementById("drv-code"),nt=document.getElementById("drv-note");
+  const set=v=>{cd.innerHTML=esc(code[v]);nt.innerHTML=note[v];};
+  w.querySelectorAll(".op").forEach(b=>b.onclick=()=>{w.querySelectorAll(".op").forEach(x=>x.classList.remove("s"));b.classList.add("s");set(b.dataset.v);});
+  set("def");
+})();
+
+/* mef debounce simulator */
+(()=>{const w=document.getElementById("w-mef");if(!w)return;
+  const S=[["ESPERA","ESP"],["DEBOUNCE_PRESS","D-PRESS"],["PRESIONADO","PRES"],["DEBOUNCE_RELEASE","D-REL"]];
+  const host=document.getElementById("mef-nodes");
+  S.forEach((s,i)=>{const d=document.createElement("div");d.className="mnode";d.dataset.i=i;d.innerHTML=`<div class="mk">${s[1]}</div><div class="ml">${s[0]}</div>`;host.appendChild(d);});
+  let cur=0,btn=false;
+  const nodes=[...host.querySelectorAll(".mnode")],out=document.getElementById("mef-o"),led=document.getElementById("mef-led"),ol=document.getElementById("mef-ol"),bl=document.getElementById("mef-bl");
+  const paint=msg=>{nodes.forEach((n,i)=>n.classList.toggle("a",i===cur));const on=cur===2;
+    led.classList.toggle("on",on);ol.textContent=on?"ON":"OFF";bl.textContent=btn?"ON":"OFF";if(msg)out.innerHTML=msg;};
+  const step=()=>{const B=btn;let msg="";
+    if(cur===0){ if(B){cur=1;msg="<b>ESPERA → DEBOUNCE_PRESS</b>: se detectó el pulsador en ON; arranca el conteo de 30 ms.";} else msg="Sigue en <b>ESPERA</b>: el pulsador está en OFF.";}
+    else if(cur===1){ if(B){cur=2;msg="<b>DEBOUNCE_PRESS → PRESIONADO</b>: a los 30 ms sigue ON ⇒ pulsación confirmada. Salida = ON.";} else {cur=0;msg="<b>DEBOUNCE_PRESS → ESPERA</b>: a los 30 ms ya estaba OFF ⇒ era un rebote.";}}
+    else if(cur===2){ if(!B){cur=3;msg="<b>PRESIONADO → DEBOUNCE_RELEASE</b>: se soltó; arranca el conteo para confirmar la liberación.";} else msg="Sigue <b>PRESIONADO</b>: cada 30 ms se verifica que siga ON.";}
+    else { if(!B){cur=0;msg="<b>DEBOUNCE_RELEASE → ESPERA</b>: a los 30 ms sigue OFF ⇒ liberación confirmada.";} else {cur=2;msg="<b>DEBOUNCE_RELEASE → PRESIONADO</b>: volvió a ON antes de confirmar ⇒ era rebote al soltar.";}}
+    paint(msg);};
+  document.getElementById("mef-btn").onclick=()=>{btn=!btn;paint(`Pulsador ahora en <b>${btn?"ON":"OFF"}</b>. Pulsa <b>+30 ms</b> para evaluar la transición.`);};
+  document.getElementById("mef-step").onclick=step;
+  document.getElementById("mef-r").onclick=()=>{cur=0;btn=false;paint("Reiniciado a <b>ESPERA</b>. Pon el pulsador en ON y avanza.");};
+  paint();
+})();
+
+/* mef code viewer (C listings, Actividad 3) */
+(()=>{const w=document.getElementById("w-mc");if(!w)return;
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const hl=s=>esc(s).replace(/(\/\/[^\n]*)/g,'<span class="c">$1</span>');
+  const code={
+   tick:`volatile uint32_t msTicks = 0;
+
+void SysTick_Handler(void){ msTicks++; }   // cada 1 ms
+uint32_t GetTick(void){ return msTicks; }
+
+void SysTick_Init(void){                    // 16 MHz -> 1 ms
+  SysTick->LOAD = 16000 - 1;                // (16e6 * 0.001) - 1
+  SysTick->VAL  = 0;                        // limpia y borra COUNTFLAG
+  SysTick->CTRL = (1<<2)|(1<<1)|(1<<0);     // CLKSOURCE, TICKINT, ENABLE
+}`,
+   read:`// Lee el Input Data Register: 1 si PA0 esta en alto
+uint8_t ReadButton(void){
+  return ((GPIOA->IDR & (1 << 0)) != 0) ? 1 : 0;
+}`,
+   fsm:`typedef enum {
+  ESPERA, DEBOUNCE_PRESS, PRESIONADO, DEBOUNCE_RELEASE
+} ButtonState_t;
+
+typedef struct {
+  ButtonState_t currentState;
+  uint32_t      lastChangeTime;   // ms de la ultima transicion
+} ButtonFSM_t;
+
+void ButtonFSM_Init(ButtonFSM_t *fsm){
+  fsm->currentState   = ESPERA;
+  fsm->lastChangeTime = GetTick();
+}`,
+   upd:`#define DEBOUNCE_TIME 30   // ms
+
+void ButtonFSM_Update(ButtonFSM_t *fsm){
+  uint8_t  b = ReadButton();
+  uint32_t t = GetTick();
+  switch(fsm->currentState){
+    case ESPERA:
+      if(b){ fsm->currentState=DEBOUNCE_PRESS; fsm->lastChangeTime=t; }
+      break;
+    case DEBOUNCE_PRESS:
+      if(t - fsm->lastChangeTime >= DEBOUNCE_TIME){
+        fsm->currentState = b ? PRESIONADO : ESPERA;
+        fsm->lastChangeTime = t;
+      }
+      break;
+    case PRESIONADO:
+      if(!b){ fsm->currentState=DEBOUNCE_RELEASE; fsm->lastChangeTime=t; }
+      break;
+    case DEBOUNCE_RELEASE:
+      if(t - fsm->lastChangeTime >= DEBOUNCE_TIME){
+        fsm->currentState = b ? PRESIONADO : ESPERA;
+        fsm->lastChangeTime = t;
+      }
+      break;
+    default: fsm->currentState = ESPERA; break;
+  }
+}`,
+   main:`int main(void){
+  RCC->AHB1ENR |= (1 << 0);          // 1. reloj GPIOA
+  GPIOA->MODER &= ~(3 << (0*2));     // 2. PA0 como entrada
+  SysTick_Init();                    // 3. base de tiempo 1 ms
+
+  ButtonFSM_t boton;                 // 4. inicializar la MEF
+  ButtonFSM_Init(&boton);
+
+  while(1){                          // 5. actualizar cada iteracion
+    ButtonFSM_Update(&boton);
+    // ... otras tareas ...
+  }
+}`};
+  const note={
+   tick:"El SysTick genera un tick de 1 ms. <span class='mono'>msTicks</span> es <b>volatile</b> porque la ISR la escribe y <span class='mono'>main</span> la lee.",
+   read:"Sin HAL, se lee directo el registro IDR. Devuelve 1 si el pulsador (PA0) está presionado.",
+   fsm:"El estado se encapsula en una <b>struct</b> (no globales sueltas): para varios pulsadores basta un arreglo de <span class='mono'>ButtonFSM_t</span>.",
+   upd:"Un <span class='mono'>case</span> por estado. La condición correcta es <span class='mono'>&gt;= DEBOUNCE_TIME</span>: usar <span class='mono'>&lt;</span> confirmaría el cambio <b>durante</b> los rebotes y anularía el filtro.",
+   main:"El orden es fijo: reloj → SysTick → GPIO → MEF → <span class='mono'>while(1)</span>. El <span class='mono'>main()</span> nunca retorna."};
+  const cd=document.getElementById("mc-code"),nt=document.getElementById("mc-note");
+  const set=v=>{cd.innerHTML=hl(code[v]);nt.innerHTML=note[v];};
+  w.querySelectorAll(".op").forEach(b=>b.onclick=()=>{w.querySelectorAll(".op").forEach(x=>x.classList.remove("s"));b.classList.add("s");set(b.dataset.v);});
+  set("tick");
+})();
+</script>
