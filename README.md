@@ -144,7 +144,7 @@ Reto2Micro/
 
 ## Documentación: 
 
-En la carpeta `2. documentación` se encuentran las estrategias de desarrollo, los cálculos de temporización y la configuración de periféricos.
+En la carpeta `2. documentación` se encuentran las estrategias de desarrollo.
 
 ---
 
